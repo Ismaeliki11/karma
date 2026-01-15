@@ -8,23 +8,25 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Loader2, Calendar as 
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { getServiceById } from '@/lib/services';
+import { toast } from "sonner";
 
 interface Props {
     booking: {
         id: string;
+        locator: string; // Added locator
         date: string;
         time: string;
         serviceId: string;
         serviceName: string;
         serviceDuration: number;
     };
-    token: string;
+    token?: string;
     userEmail: string;
 }
 
 export function RescheduleClient({ booking: initialBooking, token, userEmail }: Props) {
     const router = useRouter();
-    const searchParams = useSearchParams(); // Needs import if not already
+    const searchParams = useSearchParams();
     const newServiceId = searchParams?.get('newServiceId');
     const timeSlotsRef = useRef<HTMLDivElement>(null);
 
@@ -46,10 +48,6 @@ export function RescheduleClient({ booking: initialBooking, token, userEmail }: 
     const [slotsError, setSlotsError] = useState<string | null>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    // Initialize with current booking date if valid (optional, but nice UX)
-    // Maybe checking if it is in the past? 
-    // Let's start fresh to force them to pick.
 
     // Fetch slots when Date changes
     useEffect(() => {
@@ -124,12 +122,16 @@ export function RescheduleClient({ booking: initialBooking, token, userEmail }: 
                 throw new Error(data.error || 'Error al reprogramar');
             }
 
-            // Success! Redirect to dashboard
-            router.push(`/mis-reservas/dashboard?token=${token}&rescheduled=true`);
+            // Success! Redirect to dashboard OR single view
+            if (token) {
+                router.push(`/mis-reservas/dashboard?token=${token}&rescheduled=true`);
+            } else {
+                router.push(`/mis-reservas/reserva/${initialBooking.locator}?rescheduled=true`);
+            }
             router.refresh();
 
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message || 'Error al reprogramar');
             setIsSubmitting(false);
         }
     };

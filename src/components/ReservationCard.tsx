@@ -6,7 +6,9 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, XCircle, Edit2, ChevronRight, X, AlertTriangle, CheckCircle2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ActionConfirmModal } from './ActionConfirmModal';
 import { cancelClientBooking, deleteClientBooking } from '@/actions/client-bookings';
+import { toast } from "sonner";
 
 interface Booking {
     id: string;
@@ -22,6 +24,7 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isCancelled, setIsCancelled] = useState(booking.status === 'CANCELLED');
+    const [confirmAction, setConfirmAction] = useState<'cancel' | 'delete' | null>(null);
     const router = useRouter();
 
     const dateObj = new Date(booking.date);
@@ -48,10 +51,13 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
             if (res.success) {
                 setIsCancelled(true);
                 setIsModalOpen(false);
+                setConfirmAction(null);
                 router.refresh();
+                toast.success("Cita cancelada correctamente");
             }
         } catch (error) {
             console.error(error);
+            toast.error("Error al cancelar la cita");
         } finally {
             setIsProcessing(false);
         }
@@ -74,18 +80,22 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
 
             if (!res.ok) {
                 const data = await res.json();
-                alert(data.error || "No se pudo reactivar la cita. El hueco podría estar ocupado.");
+                toast.error(data.error || "No se pudo reactivar la cita", {
+                    description: "El hueco podría estar ocupado."
+                });
                 return;
             }
 
             setIsCancelled(false);
             setIsModalOpen(false);
             router.refresh();
-            alert("¡Cita reactivada con éxito!");
+            toast.success("¡Cita reactivada con éxito!", {
+                description: "Ya vuelve a estar en tu calendario."
+            });
 
         } catch (error) {
             console.error(error);
-            alert("Ocurrió un error al reactivar.");
+            toast.error("Ocurrió un error al reactivar.");
         } finally {
             setIsProcessing(false);
         }
@@ -94,13 +104,32 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
     const handleReschedule = () => {
         const currentUrl = new URL(window.location.href);
         const token = currentUrl.searchParams.get('token');
-        router.push(`/mis-reservas/reprogramar/${booking.id}?token=${token}`);
+        // If we have token, keep it. If not, use locator as 'code' param.
+        const queryParam = token ? `token=${token}` : `code=${booking.locator}`;
+        router.push(`/mis-reservas/reprogramar/${booking.id}?${queryParam}`);
     };
 
     const handleChangeService = () => {
         const currentUrl = new URL(window.location.href);
         const token = currentUrl.searchParams.get('token');
-        router.push(`/mis-reservas/cambiar-servicio/${booking.id}?token=${token}`);
+        const queryParam = token ? `token=${token}` : `code=${booking.locator}`;
+        router.push(`/mis-reservas/cambiar-servicio/${booking.id}?${queryParam}`);
+    };
+
+    const handleDelete = async () => {
+        setIsProcessing(true);
+        try {
+            await deleteClientBooking(booking.id, userEmail);
+            setIsModalOpen(false);
+            setConfirmAction(null);
+            router.refresh();
+            toast.success("Reserva eliminada del historial");
+        } catch (error) {
+            console.error(error);
+            toast.error("No se pudo eliminar la reserva");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -285,11 +314,7 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
                                     {/* Option 3: Cancel (Only if NOT cancelled) */}
                                     {!isCancelled && (
                                         <button
-                                            onClick={() => {
-                                                if (confirm('¿Seguro que quieres liberar este hueco?')) {
-                                                    handleCancel();
-                                                }
-                                            }}
+                                            onClick={() => setConfirmAction('cancel')}
                                             disabled={isProcessing}
                                             className="w-full flex items-center justify-between p-5 rounded-3xl border border-neutral-100 hover:border-red-200 hover:bg-red-50/50 transition-all group text-left"
                                         >
@@ -309,15 +334,7 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
                                     {/* Option 4: DELETE (Only if CANCELLED) */}
                                     {isCancelled && (
                                         <button
-                                            onClick={async () => {
-                                                if (confirm('¿Quieres eliminar esta reserva de tu historial?')) {
-                                                    setIsProcessing(true);
-                                                    await deleteClientBooking(booking.id, userEmail);
-                                                    setIsProcessing(false);
-                                                    setIsModalOpen(false);
-                                                    router.refresh();
-                                                }
-                                            }}
+                                            onClick={() => setConfirmAction('delete')}
                                             disabled={isProcessing}
                                             className="w-full flex items-center justify-between p-5 rounded-3xl border border-neutral-100 hover:border-neutral-300 hover:bg-neutral-50 transition-all group text-left"
                                         >
@@ -345,6 +362,22 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
                     </div>
                 )}
             </AnimatePresence>
+
+            <ActionConfirmModal
+                isOpen={!!confirmAction}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={() => {
+                    if (confirmAction === 'cancel') handleCancel();
+                    if (confirmAction === 'delete') handleDelete();
+                }}
+                isProcessing={isProcessing}
+                variant="danger"
+                title={confirmAction === 'cancel' ? "¿Cancelar Cita?" : "¿Eliminar Reserva?"}
+                description={confirmAction === 'cancel'
+                    ? "Al cancelar liberarás el hueco para otra persona. Podrás reactivarla más tarde si cambia de opinión."
+                    : "Esta acción no se puede deshacer. La reserva desaparecerá de tu historial."}
+                confirmText={confirmAction === 'cancel' ? "Sí, Cancelar" : "Sí, Eliminar"}
+            />
         </>
     );
 }

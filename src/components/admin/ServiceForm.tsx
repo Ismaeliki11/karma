@@ -4,6 +4,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X } from "lucide-react";
+import { toast } from "sonner";
 
 type Service = {
     id: string;
@@ -66,12 +67,12 @@ export function ServiceForm({ initialData, onSuccess, onCancel }: ServiceFormPro
                 const json = await res.json();
                 setFormData(prev => ({ ...prev, imageUrl: json.url }));
             } else {
-                alert("Error al subir imagen");
+                toast.error("Error al subir imagen");
                 console.error(await res.text());
             }
         } catch (error) {
             console.error(error);
-            alert("Error de conexión al subir imagen");
+            toast.error("Error de conexión al subir imagen");
         } finally {
             setUploading(false);
         }
@@ -100,10 +101,10 @@ export function ServiceForm({ initialData, onSuccess, onCancel }: ServiceFormPro
             if (res.ok) {
                 onSuccess();
             } else {
-                alert("Error al guardar el servicio");
+                toast.error("Error al guardar el servicio");
             }
         } catch (error) {
-            alert("Error de conexión");
+            toast.error("Error de conexión");
         } finally {
             setSubmitting(false);
         }

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, Save, AlertCircle, RefreshCw } from "lucide-react";
 import { ConflictModal } from "./ConflictModal";
+import { toast } from "sonner";
 
 interface BusinessDay {
     dayOfWeek: number;
@@ -65,16 +66,16 @@ export function BusinessHoursEditor() {
             const data = await res.json();
 
             if (res.ok) {
-                alert("Horario guardado correctamente");
+                toast.success("Horario guardado correctamente");
                 setShowConflictModal(false);
             } else if (res.status === 409) {
                 setConflicts(data.conflicts);
                 setShowConflictModal(true);
             } else {
-                alert(data.error || "Error al guardar");
+                toast.error(data.error || "Error al guardar");
             }
         } catch (error) {
-            alert("Error de conexión");
+            toast.error("Error de conexión");
         } finally {
             setSaving(false);
         }

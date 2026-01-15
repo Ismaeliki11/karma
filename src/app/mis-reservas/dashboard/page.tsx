@@ -11,10 +11,11 @@ import { DashboardClient } from './client';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage(props: {
-    searchParams: Promise<{ token?: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const searchParams = await props.searchParams;
-    const token = searchParams.token;
+    const token = typeof searchParams.token === 'string' ? searchParams.token : undefined;
+    const rescheduled = searchParams.rescheduled === 'true';
 
     if (!token) {
         redirect('/mis-reservas');
@@ -67,6 +68,20 @@ export default async function DashboardPage(props: {
 
             {/* Content Container */}
             <div className="max-w-4xl mx-auto px-6 py-12">
+                {rescheduled && (
+                    <div className="mb-8 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex gap-3 text-emerald-800 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="bg-emerald-100 p-2 rounded-full h-fit text-emerald-600">
+                            <ArrowRight className="rotate-[-45deg]" size={16} />
+                        </div>
+                        <div>
+                            <p className="font-medium">¡Reserva modificada!</p>
+                            <p className="text-sm text-emerald-600/80 mt-1">
+                                Hemos enviado un correo con los detalles actualizados.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <div className="p-4 bg-red-50/50 border border-red-100 text-red-600 rounded-2xl text-sm flex items-center gap-3 mb-8">
                         <AlertCircle size={18} />
@@ -82,4 +97,3 @@ export default async function DashboardPage(props: {
         </div>
     );
 }
-

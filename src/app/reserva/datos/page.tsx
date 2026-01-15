@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { toast } from "sonner";
 
 export default function DatosPage() {
     const { booking, updateBooking } = useBooking();
@@ -71,7 +72,7 @@ export default function DatosPage() {
         } catch (error) {
             console.error('Submission error:', error);
             const message = error instanceof Error ? error.message : 'Error desconocido';
-            alert(`Error: ${message}`);
+            toast.error(`Error al crear la reserva: ${message}`);
             setLoading(false); // Only stop loading if error (otherwise we are redirecting)
         }
     };

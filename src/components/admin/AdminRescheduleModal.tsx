@@ -8,6 +8,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useServices } from "@/hooks/useServices";
+import { toast } from "sonner";
 
 interface Booking {
     id: string;
@@ -132,7 +133,7 @@ export function AdminRescheduleModal({ booking, isOpen, onClose, onSuccess, star
 
             onSuccess();
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message || "Error al reprogramar");
         } finally {
             setIsSubmitting(false);
         }

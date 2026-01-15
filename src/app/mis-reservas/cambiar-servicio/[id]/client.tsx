@@ -11,17 +11,18 @@ import { Loader2 } from 'lucide-react';
 interface Props {
     bookingId: string;
     currentServiceId: string;
-    token: string;
+    token?: string;
+    locator: string;
 }
 
-export function ChangeServiceClient({ bookingId, currentServiceId, token }: Props) {
+export function ChangeServiceClient({ bookingId, currentServiceId, token, locator }: Props) {
     const router = useRouter();
     const { categories, loading } = useServices();
 
     const handleSelect = (serviceId: string) => {
         // Redirect to reschedule page with newServiceId param
-        // This forces the user to pick/confirm a time slot for the NEW service duration
-        router.push(`/mis-reservas/reprogramar/${bookingId}?token=${token}&newServiceId=${serviceId}`);
+        const queryParam = token ? `token=${token}` : `code=${locator}`;
+        router.push(`/mis-reservas/reprogramar/${bookingId}?${queryParam}&newServiceId=${serviceId}`);
     };
 
     return (

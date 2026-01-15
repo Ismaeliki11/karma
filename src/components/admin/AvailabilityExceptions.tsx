@@ -7,6 +7,8 @@ import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Plus, Trash2, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConflictModal } from "./ConflictModal";
+import { ActionConfirmModal } from "@/components/ActionConfirmModal";
+import { toast } from "sonner";
 
 interface Exception {
     id: string;
@@ -31,7 +33,10 @@ export function AvailabilityExceptions() {
     const [closeTime, setCloseTime] = useState("20:00");
     const [breakStart, setBreakStart] = useState("");
     const [breakEnd, setBreakEnd] = useState("");
+
     const [reason, setReason] = useState("");
+
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     // Conflict State
     const [conflicts, setConflicts] = useState<any[]>([]);
@@ -56,7 +61,10 @@ export function AvailabilityExceptions() {
     }, []);
 
     const handleAdd = async (force = false) => {
-        if (!newDate) return alert("Selecciona una fecha");
+        if (!newDate) {
+            toast.error("Selecciona una fecha");
+            return;
+        }
 
         setConflicts([]);
 
@@ -89,20 +97,23 @@ export function AvailabilityExceptions() {
                 setConflicts(data.conflicts);
                 setShowConflictModal(true);
             } else {
-                alert(data.error || "Error al guardar excepción");
+                toast.error(data.error || "Error al guardar excepción");
             }
         } catch (error) {
-            alert("Error de conexión");
+            toast.error("Error de conexión");
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("¿Eliminar esta excepción?")) return;
+    const handleDelete = async () => {
+        if (!confirmDeleteId) return;
         try {
-            await fetch(`/api/settings/exceptions?id=${id}`, { method: "DELETE" });
+            await fetch(`/api/settings/exceptions?id=${confirmDeleteId}`, { method: "DELETE" });
             fetchExceptions();
+            toast.success("Excepción eliminada");
         } catch (error) {
-            alert("Error al eliminar");
+            toast.error("Error al eliminar");
+        } finally {
+            setConfirmDeleteId(null);
         }
     };
 
@@ -250,7 +261,7 @@ export function AvailabilityExceptions() {
                                 </div>
                             </div>
                             <Button
-                                onClick={() => handleDelete(ex.id)}
+                                onClick={() => setConfirmDeleteId(ex.id)}
                                 variant="ghost"
                                 size="sm"
                                 className="text-gray-300 hover:text-red-500 hover:bg-red-50"
@@ -269,6 +280,16 @@ export function AvailabilityExceptions() {
                     onConfirm={() => handleAdd(true)}
                 />
             )}
+
+            <ActionConfirmModal
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={handleDelete}
+                title="¿Eliminar Excepción?"
+                description="Se restablecerá el horario habitual para este día."
+                confirmText="Eliminar"
+                variant="danger"
+            />
         </div>
     );
 }

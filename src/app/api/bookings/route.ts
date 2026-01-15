@@ -315,7 +315,26 @@ export async function PATCH(request: Request) {
             .leftJoin(services, eq(bookings.serviceId, services.id))
             .where(eq(bookings.id, id));
 
-        return NextResponse.json(updatedResult[0]);
+        const updatedBooking = updatedResult[0];
+
+        // 5. Send Update Email (Async/Blocking?)
+        // Let's do it blocking for now to ensure delivery, or we could fire and forget if performance is an issue.
+        // Given the user wants robust detection, blocking is safer or at least await it.
+        try {
+            await import('@/lib/email').then(m => m.sendBookingUpdateEmail({
+                customerName: updatedBooking.customerName,
+                customerEmail: updatedBooking.customerEmail,
+                date: updatedBooking.date,
+                startTime: updatedBooking.startTime,
+                locator: updatedBooking.locator,
+                serviceName: updatedBooking.serviceName || undefined
+            }));
+        } catch (emailError) {
+            console.error('Failed to send update email', emailError);
+            // We generally don't want to fail the request if email fails, but maybe log it?
+        }
+
+        return NextResponse.json(updatedBooking);
 
     } catch (error: any) {
         console.error('Booking Update Error:', error);
