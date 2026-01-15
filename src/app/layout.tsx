@@ -10,6 +10,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Karma Centro de Estética",
   description: "Centro de Estética Karma - Manicura, Pedicura, Tratamientos Faciales y Corporales.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.webp", // Modern browsers
+    apple: "/favicon.webp", // iOS
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,15 @@
+{
+    "name": "Karma Centro de Estética",
+    "short_name": "Karma",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "icons": [
+        {
+            "src": "/favicon.webp",
+            "sizes": "any",
+            "type": "image/webp"
+        }
+    ]
+}
