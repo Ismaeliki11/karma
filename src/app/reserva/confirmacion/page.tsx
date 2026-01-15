@@ -133,7 +133,7 @@ function ConfirmationContent() {
     if (status === 'idle' && isNew) return null;
 
     return (
-        <div className="max-w-md mx-auto text-center space-y-8 pt-10">
+        <div className="max-w-md mx-auto text-center space-y-8 pt-10 pb-20">
             {renderContent()}
 
             {(status === 'success' || status === 'email_error' || (!isNew && status === 'idle')) && (
@@ -157,6 +157,31 @@ function ConfirmationContent() {
                         </div>
                     </div>
 
+                    {/* Google Maps Section */}
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold text-neutral-900">¡Aquí te esperamos!</h2>
+                        <div className="rounded-2xl overflow-hidden border border-neutral-200 shadow-sm">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d55414.28724415761!2d-1.5486146370758704!3d37.78594561871283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd649372a782faed%3A0xf05ab0ad51578468!2sCentro%20de%20Est%C3%A9tica%20Karma!5e0!3m2!1ses!2ses!4v1768473725456!5m2!1ses!2ses"
+                                width="100%"
+                                height="250"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                            ></iframe>
+                        </div>
+                        <a
+                            href="https://www.google.com/maps/search/?api=1&query=Centro+de+Estética+Karma"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-white text-neutral-900 border border-neutral-200 py-4 px-6 rounded-xl font-medium shadow-sm hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Home size={20} />
+                            Ir a Google Maps
+                        </a>
+                    </div>
+
                     <p className="text-sm text-neutral-400 px-8">
                         Puedes usar tu número de reserva para modificar o cancelar tu cita en cualquier momento.
                     </p>
@@ -165,7 +190,6 @@ function ConfirmationContent() {
                         href="/"
                         className="inline-flex items-center gap-2 text-neutral-900 font-medium hover:underline"
                     >
-                        <Home size={18} />
                         Volver al inicio
                     </Link>
                 </motion.div>

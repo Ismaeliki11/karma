@@ -81,7 +81,18 @@ export async function POST(request: Request) {
                     ¿Necesitas cambiar la hora o cancelar? Haz clic en el botón de arriba.
                 </p>
                 <br>
-                <p>¡Te esperamos!</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                
+                <h2>¡Aquí te esperamos!</h2>
+                <p>Centro de Estética Karma</p>
+                
+                <p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Centro+de+Estética+Karma" style="color: #000; text-decoration: underline;">
+                        Ver ubicación en Google Maps
+                    </a>
+                </p>
+                <br>
+                <p>¡Nos vemos pronto!</p>
             `
         });
 
