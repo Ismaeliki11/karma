@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { services } from '@/db/schema';
+import { services, bookings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +36,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
+
+        const associatedBookings = await db.select().from(bookings).where(eq(bookings.serviceId, id));
+        if (associatedBookings.length > 0) {
+            return NextResponse.json(
+                { error: 'Cannot delete service because it has associated bookings. Please delete the bookings first.' },
+                { status: 400 }
+            );
+        }
 
         await db.delete(services).where(eq(services.id, id));
 
