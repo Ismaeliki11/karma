@@ -374,7 +374,15 @@ export function ReservationCard({ booking, userEmail, isPast = false }: { bookin
                 variant="danger"
                 title={confirmAction === 'cancel' ? "¿Cancelar Cita?" : "¿Eliminar Reserva?"}
                 description={confirmAction === 'cancel'
-                    ? "Al cancelar liberarás el hueco para otra persona. Podrás reactivarla más tarde si cambia de opinión."
+                    ? (
+                        <div className="space-y-3">
+                            <p>Al cancelar liberarás el hueco para otra persona. Podrás reactivarla más tarde si cambia de opinión.</p>
+                            <div className="text-amber-600 bg-amber-50 p-2 rounded-lg text-xs text-left flex gap-2 items-start border border-amber-100">
+                                <AlertTriangle className="w-4 h-4 shrink-0" />
+                                <span>Te enviaremos un correo de confirmación. <strong>Revisa tu Spam</strong> si no lo recibes.</span>
+                            </div>
+                        </div>
+                    )
                     : "Esta acción no se puede deshacer. La reserva desaparecerá de tu historial."}
                 confirmText={confirmAction === 'cancel' ? "Sí, Cancelar" : "Sí, Eliminar"}
             />

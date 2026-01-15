@@ -8,7 +8,7 @@ interface Props {
     onClose: () => void;
     onConfirm: () => void;
     title: string;
-    description: string;
+    description: string | React.ReactNode;
     confirmText?: string;
     cancelText?: string;
     isProcessing?: boolean;
@@ -49,9 +49,9 @@ export function ActionConfirmModal({
                         </div>
 
                         <h3 className="text-xl font-medium text-neutral-900 mb-2">{title}</h3>
-                        <p className="text-sm text-neutral-500 mb-8 px-4 leading-relaxed">
+                        <div className="text-sm text-neutral-500 mb-8 px-4 leading-relaxed">
                             {description}
-                        </p>
+                        </div>
 
                         <div className="flex gap-3">
                             <button
@@ -65,8 +65,8 @@ export function ActionConfirmModal({
                                 onClick={onConfirm}
                                 disabled={isProcessing}
                                 className={`flex-1 py-3 px-4 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition-colors ${variant === 'danger'
-                                        ? 'bg-red-500 hover:bg-red-600'
-                                        : 'bg-black hover:bg-neutral-800'
+                                    ? 'bg-red-500 hover:bg-red-600'
+                                    : 'bg-black hover:bg-neutral-800'
                                     }`}
                             >
                                 {isProcessing && <Loader2 size={16} className="animate-spin" />}

@@ -69,6 +69,8 @@ export default async function SingleBookingPage(props: Props) {
                             <p className="font-medium">¡Reserva modificada!</p>
                             <p className="text-sm text-emerald-600/80 mt-1">
                                 Hemos enviado un correo con los detalles actualizados.
+                                <br />
+                                <span className="font-semibold">⚠️ Revisa tu carpeta de Spam si no te llega.</span>
                             </p>
                         </div>
                     </div>
