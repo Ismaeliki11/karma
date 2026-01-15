@@ -121,6 +121,7 @@ export async function POST(request: Request) {
                 endAt: endAt,    // SOURCE OF TRUTH
                 selectedOptions: selectedOptions,
                 status: 'CONFIRMED',
+                createdAt: new Date(), // Explicitly set date to avoid driver-specific SQL issues
             });
 
             return { success: true, id: bookingId, locator, customer, serviceName, date, time };
@@ -150,6 +151,10 @@ export async function POST(request: Request) {
 
     } catch (error: any) {
         console.error('Booking Transaction Error:', error);
+        // Log additional details if available (common in DB errors)
+        if (error.cause) console.error('Error Cause:', error.cause);
+        if (error.code) console.error('Error Code:', error.code);
+
         const message = error instanceof Error ? error.message : 'Internal Server Error';
 
         // Map specific errors to status codes
@@ -338,6 +343,8 @@ export async function PATCH(request: Request) {
 
     } catch (error: any) {
         console.error('Booking Update Error:', error);
+        if (error.cause) console.error('Error Cause:', error.cause);
+
         return NextResponse.json({ error: error.message || 'Error al actualizar la reserva' }, { status: 500 });
     }
 }
