@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { bookings, verificationTokens } from '@/db/schema';
+import { bookings, verificationTokens, services } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 
@@ -16,8 +16,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
         }
 
-        // 1. Fetch Booking and Token
-        const bookingResult = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+        // 1. Fetch Booking with Service Name and Token
+        const bookingResult = await db.select({
+            id: bookings.id,
+            customerName: bookings.customerName,
+            customerEmail: bookings.customerEmail,
+            date: bookings.date,
+            startTime: bookings.startTime,
+            locator: bookings.locator,
+            status: bookings.status,
+            serviceName: services.name
+        })
+            .from(bookings)
+            .leftJoin(services, eq(bookings.serviceId, services.id))
+            .where(eq(bookings.id, bookingId))
+            .limit(1);
+
         const booking = bookingResult[0];
 
         if (!booking) {
@@ -28,7 +42,7 @@ export async function POST(request: Request) {
         const tokenResult = await db.select()
             .from(verificationTokens)
             .where(eq(verificationTokens.relatedBookingId, bookingId))
-            .orderBy(desc(verificationTokens.expires)) // Get the latest one
+            .orderBy(desc(verificationTokens.expires))
             .limit(1);
 
         const tokenData = tokenResult[0];
@@ -49,6 +63,7 @@ export async function POST(request: Request) {
             date: booking.date,
             startTime: booking.startTime,
             locator: booking.locator,
+            serviceName: booking.serviceName || undefined,
             magicLink
         });
 

@@ -29,23 +29,40 @@ export async function sendMagicLink(email: string, bookingId?: string) {
         const link = `${appUrl}/mis-reservas/dashboard?token=${token}`;
 
         const resend = new Resend(process.env.RESEND_API_KEY);
+        const { getEmailLayout } = await import('@/lib/email');
+        const subject = 'Gestionar mis reservas - Karma Beauty Salon';
+
+        const content = `
+        <tr>
+            <td style="padding: 20px 40px 40px 40px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="background-color: #0a0a0a; color: #ffffff; width: 60px; height: 60px; line-height: 60px; border-radius: 50%; font-size: 30px; margin: 0 auto 20px auto;">🔑</div>
+                    <h2 style="font-size: 26px; color: #0a0a0a; margin: 0; font-weight: 700;">Acceso a tus Reservas</h2>
+                    <p style="color: #4a4a4a; font-size: 16px; margin-top: 12px; line-height: 1.5;">Haz clic en el siguiente botón para ver, cancelar o gestionar tus citas en Karma.</p>
+                </div>
+                
+                <!-- CTA -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <a href="${link}" style="background-color: #0a0a0a; color: #ffffff; padding: 18px 36px; text-decoration: none; border-radius: 14px; font-weight: 600; display: inline-block; font-size: 16px;">
+                        Ver mis reservas
+                    </a>
+                </div>
+
+                <div style="background-color: #f5f5f5; border-radius: 12px; padding: 20px; text-align: center;">
+                    <p style="color: #737373; font-size: 13px; margin: 0; line-height: 1.5;">
+                        Este enlace caduca en 24 horas por seguridad.<br>
+                        Si no has solicitado este acceso, puedes ignorar este correo.
+                    </p>
+                </div>
+            </td>
+        </tr>
+    `;
 
         await resend.emails.send({
             from: 'Karma Beauty <onboarding@resend.dev>',
             to: email,
-            subject: 'Gestionar mis reservas - Karma Beauty Salon',
-            html: `
-                <h1>Acceso a tus reservas</h1>
-                <p>Haz clic en el siguiente enlace para ver, cancelar o gestionar tus citas.</p>
-                <p>
-                    <a href="${link}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                        Ver mis reservas
-                    </a>
-                </p>
-                <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                    Este enlace caduca en 24 horas. Si no lo has solicitado, puedes ignorar este correo.
-                </p>
-            `,
+            subject,
+            html: getEmailLayout(content, subject),
         });
 
         return { success: true };
