@@ -109,6 +109,10 @@ export default function MisReservasPage() {
                             <p className="text-green-700 text-sm mt-1">
                                 Revisa tu correo ({email}). Hemos enviado un enlace mágico para acceder.
                             </p>
+                            <div className="mt-3 bg-white/60 p-3 rounded-lg text-green-800 text-xs flex gap-2 items-start">
+                                <span className="text-lg">⚠️</span>
+                                <p><strong>Importante:</strong> Si no lo ves, revisa tu carpeta de <strong>Spam o Correo no deseado</strong> (Gmail a veces lo esconde ahí).</p>
+                            </div>
                         </div>
                         <button
                             onClick={() => setIsSent(false)}

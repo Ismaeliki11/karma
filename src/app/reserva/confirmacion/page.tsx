@@ -82,6 +82,10 @@ function ConfirmationContent() {
                     <div className="space-y-2">
                         <h1 className="text-2xl font-semibold text-neutral-900">Confirmando detalles...</h1>
                         <p className="text-neutral-500">Estamos enviando tu confirmación por correo.</p>
+                        <div className="bg-amber-50 text-amber-800 text-sm px-4 py-3 rounded-lg flex items-start gap-2 text-left mt-4 border border-amber-100">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                            <p>Si no recibes el correo en unos minutos, por favor <strong>revisa tu carpeta de Spam o Correo no deseado</strong>.</p>
+                        </div>
                     </div>
                 </div>
             );
@@ -124,6 +128,9 @@ function ConfirmationContent() {
                     <p className="text-neutral-500">
                         Hemos enviado un correo con todos los detalles.
                     </p>
+                    <div className="bg-neutral-50 text-neutral-600 text-sm px-4 py-2 rounded-lg inline-block mt-2">
+                        ⚠️ Revisa tu bandeja de <strong>Spam/Basura</strong> si no lo ves.
+                    </div>
                 </div>
             </div>
         );

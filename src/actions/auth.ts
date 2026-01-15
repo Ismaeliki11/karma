@@ -59,7 +59,7 @@ export async function sendMagicLink(email: string, bookingId?: string) {
     `;
 
         await resend.emails.send({
-            from: 'Karma Beauty <onboarding@resend.dev>',
+            from: 'Karma Beauty <citas@karmasalon.com>',
             to: email,
             subject,
             html: getEmailLayout(content, subject),
