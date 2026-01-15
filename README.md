@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Karma - Salón de Belleza
 
-## Getting Started
+Este proyecto es la plataforma digital para **Karma**, un salón de belleza moderno enfocado en brindar una experiencia de usuario premium para la reserva y gestión de servicios estéticos.
 
-First, run the development server:
+## 🚀 Descripción del Proyecto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+La aplicación permite a los clientes explorar los servicios del salón (manicura, pedicura, faciales, corporales), consultar horarios de apertura y realizar reservas de manera intuitiva. También incluye un panel de administración para la gestión eficiente de citas y horarios.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tecnologías Utilizadas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Este proyecto está construido con un stack moderno para asegurar rendimiento, escalabilidad y una gran experiencia de desarrollador:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework Principal**: [Next.js](https://nextjs.org/) (App Router)
+- **Lenguaje**: TypeScript
+- **Estilos**: Tailwind CSS
+- **Base de Datos**: SQLite (con Drizzle ORM / Prisma)
+- **Autenticación**: Auth.js (NextAuth)
+- **Despliegue**: Optimizado para Netlify / Vercel
 
-## Learn More
+## ✨ Funcionalidades Principales
 
-To learn more about Next.js, take a look at the following resources:
+- **Catálogo de Servicios**: Visualización organizada de tratamientos.
+- **Sistema de Reservas**: Gestión de citas con control de disponibilidad y horarios.
+- **Panel Administrativo**: Herramientas para gestionar el negocio.
+- **Diseño Responsivo**: Experiencia fluida en móviles y escritorio.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Desarrollado por [Ismaeliki11](https://github.com/Ismaeliki11)*

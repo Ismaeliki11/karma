@@ -1,0 +1,5 @@
+ID: 'manicura-tradicional', Name: Manicura Tradicional
+ID: 'manicura-rusa', Name: Manicura Rusa
+ID: 'soft-gel', Name: Soft Gel (Kapping)
+ID: 'pedicura-spa', Name: Pedicura Spa
+ID: 'pedicura-completa', Name: Pedicura Completa

@@ -1,0 +1,25 @@
+Active Services:
+- manicura-tradicional
+- manicura-rusa
+- soft-gel
+- pedicura-spa
+- pedicura-completa
+
+Bookings Check:
+[OK] Booking ID: Y6wXKKGNqmI6cXnFx0Vzw, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: NBMyGl6hRu1S-bz51xfdh, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: c_ccYN2l-mgx4zc2yqdgh, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: 8u2BmhXQFd-lynSTtDnpL, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: j9EcYYnZXHIpCxiy7ybcr, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: RoCROdS_jfOF4iUNcMlC6, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: EjJzyuHRUGZbfxKc3jUj-, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: KYGR0tjJSBuoHjfi24OkR, ServiceID: 'pedicura-completa'
+[OK] Booking ID: 1_qOQQgavCa0j0fFOfvpO, ServiceID: 'pedicura-completa'
+[OK] Booking ID: 0MTY6zXX6-3oXcsukKiPp, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: RpOLdpUPZ5OD-H-v6X1eD, ServiceID: 'pedicura-completa'
+[OK] Booking ID: gLdwp_DH9txHHI-ZH9H_p, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: kqt-TW8ALQhwLsx8JGh4D, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: NVjBVdHwn1_pO2A9G32Ve, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: wn_RarX2c6lNxlWHh21N1, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: Kq3DnxCAChWzNnE38c9FJ, ServiceID: 'manicura-tradicional'
+[OK] Booking ID: Rz7CKLj2PEPnCmoDQxfhG, ServiceID: 'manicura-tradicional'

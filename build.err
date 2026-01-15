@@ -1,0 +1,39 @@
+
+> karma-web@0.1.0 build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.8s
+  Running TypeScript ...
+  Collecting page data using 13 workers ...
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+  Generating static pages using 13 workers (0/25) ...
+⨯ useSearchParams() should be wrapped in a suspense boundary at page "/admin". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at Q (C:\Users\ismae\Desktop\Karma\.next\server\chunks\ssr\node_modules_next_c73d6895._.js:2:2111)
+    at o (C:\Users\ismae\Desktop\Karma\.next\server\chunks\ssr\node_modules_next_c73d6895._.js:4:5284)
+    at s (C:\Users\ismae\Desktop\Karma\.next\server\chunks\ssr\src_app_admin_page_tsx_645532da._.js:1:310)
+    at an (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84360)
+    at ai (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:86179)
+    at al (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:107953)
+    at as (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:105368)
+    at aa (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84712)
+    at ai (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:86228)
+    at ai (C:\Users\ismae\Desktop\Karma\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:104708)
+Error occurred prerendering page "/admin". Read more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on /admin/page: /admin, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null
