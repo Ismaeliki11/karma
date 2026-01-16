@@ -34,7 +34,9 @@ export function Navbar({ onBook }: NavbarProps) {
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+            if (typeof window !== "undefined") {
+                setIsScrolled(window.scrollY > 20);
+            }
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
