@@ -26,24 +26,6 @@ export default function Error({
                 <p className="text-gray-500 max-w-md">
                     Ha ocurrido un error inesperado. Por favor, intenta recargar la página.
                 </p>
-                {error && (
-                    <div className="mt-4 p-3 bg-red-50 rounded-lg text-left w-full max-w-md overflow-x-auto border border-red-100">
-                        <p className="font-mono text-xs text-red-800 break-words font-semibold">
-                            {error.message || "Error desconocido"}
-                        </p>
-                        {error.digest && (
-                            <p className="font-mono text-[10px] text-red-500 mt-1">
-                                Digest: {error.digest}
-                            </p>
-                        )}
-                        {error.stack && (
-                            <pre className="font-mono text-[10px] text-gray-500 mt-2 whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                {error.stack}
-                            </pre>
-                        )}
-                        {/* Optional: Show stack trace in development only, but useful here if it isn't stripped */}
-                    </div>
-                )}
             </div>
             <div className="flex gap-4">
                 <Button
