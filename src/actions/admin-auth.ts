@@ -3,9 +3,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-// TODO: Move these to Environment Variables in production
-const ADMIN_USER = process.env.ADMIN_USER || "admin";
-const ADMIN_PASS = process.env.ADMIN_PASS || "karma2026";
+// Credentials should be set in Netlify Environment Variables
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
 
 export async function loginAdmin(formData: FormData) {
     const username = formData.get("username") as string;

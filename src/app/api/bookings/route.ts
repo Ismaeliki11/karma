@@ -14,13 +14,13 @@ import { getBusinessBoundaries } from '@/lib/availability';
 // Schema Validation
 const bookingSchema = z.object({
     serviceId: z.string(),
-    serviceName: z.string(),
-    selectedOptions: z.array(z.string()),
+    serviceName: z.string().optional(),
+    selectedOptions: z.array(z.string()).optional().default([]),
     date: z.string(), // YYYY-MM-DD
     time: z.string(), // HH:mm
     customer: z.object({
         name: z.string().min(1),
-        email: z.string().email(),
+        email: z.string().email().optional().or(z.literal('')),
         phone: z.string().min(1),
     }),
 });
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
                 locator,
                 serviceId,
                 customerName: customer.name,
-                customerEmail: customer.email,
+                customerEmail: customer.email || "",
                 customerPhone: customer.phone,
                 date: date, // Keep metadata
                 startTime: time, // Keep metadata
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
         try {
             await db.insert(verificationTokens).values({
                 token: magicToken,
-                identifier: bookingResult.customer.email,
+                identifier: bookingResult.customer.email || "",
                 expires: addHours(new Date(), 24),
                 relatedBookingId: bookingResult.id,
             });

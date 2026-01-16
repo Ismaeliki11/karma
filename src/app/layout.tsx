@@ -9,12 +9,40 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Karma Centro de Estética",
-  description: "Centro de Estética Karma - Manicura, Pedicura, Tratamientos Faciales y Corporales.",
+  title: {
+    default: "Karma Centro de Estética",
+    template: "%s | Karma Estética",
+  },
+  description: "Centro de Estética Karma - Manicura, Pedicura, Tratamientos Faciales y Corporales en un ambiente relajante y exclusivo.",
+  keywords: ["estética", "manicura", "pedicura", "facial", "corporal", "belleza", "karma"],
+  authors: [{ name: "Karma Centro de Estética" }],
+  creator: "Karma Centro de Estética",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.webp", // Modern browsers
-    apple: "/favicon.webp", // iOS
+    icon: "/favicon.webp",
+    apple: "/favicon.webp",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://centroesteticakarma.netlify.app",
+    title: "Karma Centro de Estética",
+    description: "Descubre tu mejor versión en Karma. Tratamientos exclusivos de manicura, pedicura y estética facial y corporal.",
+    siteName: "Karma Centro de Estética",
+    images: [
+      {
+        url: "/og-image.jpg", // We might need to create this later or use a placeholder if not exists, but defining it is good practice
+        width: 1200,
+        height: 630,
+        alt: "Karma Centro de Estética",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Karma Centro de Estética",
+    description: "Centro de Estética Karma - Tu espacio de belleza y bienestar.",
+    creator: "@karmaestetica", // Placeholder
   },
 };
 

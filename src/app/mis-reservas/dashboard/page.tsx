@@ -90,7 +90,14 @@ export default async function DashboardPage(props: {
                 )}
 
                 <DashboardClient
-                    bookings={clientBookings as any[] || []}
+                    bookings={(clientBookings || []).map(b => ({
+                        ...b,
+                        serviceName: b.serviceName || 'Servicio Desconocido',
+                        servicePrice: b.servicePrice || 0,
+                        serviceDuration: b.serviceDuration || 0,
+                        startAt: b.startAt.toISOString(),
+                        createdAt: b.createdAt.toISOString()
+                    }))}
                     userEmail={verification.email!}
                 />
             </div>

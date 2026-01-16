@@ -15,8 +15,8 @@ interface Booking {
     servicePrice: number;
     serviceDuration: number;
     status: string;
-    startAt: Date;
-    createdAt: Date;
+    startAt: string;
+    createdAt: string;
 }
 
 interface Props {

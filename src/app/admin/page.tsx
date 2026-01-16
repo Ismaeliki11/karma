@@ -40,6 +40,7 @@ interface Booking {
     servicePrice: number;
 }
 
+import Link from "next/link";
 import { AdminRescheduleModal } from "@/components/admin/AdminRescheduleModal";
 
 import { useSearchParams } from "next/navigation";
@@ -176,9 +177,18 @@ function AdminDashboardContent() {
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 sticky top-0 z-10">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold tracking-tight">Citas</h2>
-                    <button onClick={fetchData} className="p-2 bg-gray-50 rounded-full text-gray-600 hover:bg-black hover:text-white transition-colors">
-                        <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
-                    </button>
+                    <div className="flex gap-2">
+                        <Link
+                            href="/admin/nueva-reserva"
+                            className="bg-black text-white px-4 py-2 rounded-full text-sm font-bold shadow-md hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                        >
+                            <CalendarIcon size={16} />
+                            <span>Nueva</span>
+                        </Link>
+                        <button onClick={fetchData} className="p-2 bg-gray-50 rounded-full text-gray-600 hover:bg-black hover:text-white transition-colors">
+                            <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Date Navigation */}
@@ -506,6 +516,7 @@ function AdminDashboardContent() {
                     }}
                 />
             )}
+
         </div>
     );
 }

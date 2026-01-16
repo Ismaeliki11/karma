@@ -14,6 +14,7 @@ interface Booking {
     serviceName: string;
     servicePrice: number;
     status: string;
+    startAt: string;
 }
 
 interface Props {
@@ -35,7 +36,7 @@ export function BookingHistory({ bookings, userEmail }: Props) {
                 <div className="p-2 bg-neutral-50 rounded-full group-hover:bg-neutral-100 transition-colors">
                     <History size={16} />
                 </div>
-                <span>{isOpen ? 'Ocultar citas anteriores' : 'Ver historial de citas'}</span>
+                <span>{isOpen ? 'Ocultar citas anteriores' : `Ver historial de citas (${bookings.length})`}</span>
                 {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
 

@@ -20,7 +20,7 @@ export default function AdminLayout({
         await logoutAdmin();
     };
 
-    if (isLoginPage) {
+    if (isLoginPage || pathname?.startsWith("/admin/nueva-reserva")) {
         return <div className="min-h-screen bg-white">{children}</div>;
     }
 
