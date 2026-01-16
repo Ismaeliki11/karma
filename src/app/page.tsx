@@ -20,10 +20,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* <NoticeBanner /> */}
+      <NoticeBanner />
       <Navbar onBook={handleBook} />
       <Hero onBook={handleBook} />
-      <Services />
+      {/* <Services /> */}
       <Hours />
       <ReviewsSection />
       <Footer />
