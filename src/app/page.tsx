@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Services } from "@/components/Services";
 import { Hours } from "@/components/Hours";
+import { ReviewsSection } from "@/components/ReviewsSection";
 import { Footer } from "@/components/Footer";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +25,7 @@ export default function Home() {
       <Hero onBook={handleBook} />
       <Services />
       <Hours />
+      <ReviewsSection />
       <Footer />
     </main>
   );
