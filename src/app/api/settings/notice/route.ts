@@ -2,8 +2,13 @@ import { NextResponse } from 'next/server';
 import { getSettings, saveSettings } from '@/lib/settings';
 
 export async function GET() {
-    const settings = await getSettings();
-    return NextResponse.json(settings.publicNotice);
+    try {
+        const settings = await getSettings();
+        return NextResponse.json(settings.publicNotice);
+    } catch (error) {
+        // Return default/empty notice on error
+        return NextResponse.json({ active: false, message: "" });
+    }
 }
 
 export async function POST(request: Request) {
