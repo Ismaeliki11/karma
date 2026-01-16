@@ -36,6 +36,11 @@ export default function Error({
                                 Digest: {error.digest}
                             </p>
                         )}
+                        {error.stack && (
+                            <pre className="font-mono text-[10px] text-gray-500 mt-2 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                {error.stack}
+                            </pre>
+                        )}
                         {/* Optional: Show stack trace in development only, but useful here if it isn't stripped */}
                     </div>
                 )}
