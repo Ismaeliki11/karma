@@ -5,9 +5,13 @@ const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
 
 // Ensure data dir exists
 const ensureDir = () => {
-    const dir = path.dirname(SETTINGS_FILE);
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+    try {
+        const dir = path.dirname(SETTINGS_FILE);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    } catch (e) {
+        console.warn("Could not ensure settings directory (likely read-only fs):", e);
     }
 };
 
