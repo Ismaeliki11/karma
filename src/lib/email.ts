@@ -1,8 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const FROM_EMAIL = 'Karma Beauty <citas@karmasalon.com>';
+const FROM_EMAIL = 'Karma Beauty <onboarding@resend.dev>';
+
+const getResendClient = () => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        console.warn('RESEND_API_KEY is missing');
+        return null;
+    }
+    return new Resend(apiKey);
+};
 
 interface EmailBookingDetails {
     customerName: string;
@@ -12,6 +20,7 @@ interface EmailBookingDetails {
     locator: string;
     magicLink?: string;
     serviceName?: string;
+    senderName?: string;
 }
 
 export const getEmailLayout = (content: string, subject: string) => `
@@ -67,6 +76,11 @@ export const getEmailLayout = (content: string, subject: string) => `
 `;
 
 export async function sendBookingConfirmationEmail(details: EmailBookingDetails) {
+    const resend = getResendClient();
+    if (!resend) {
+        return { error: { message: "Email service not configured (RESEND_API_KEY missing)" }, data: null };
+    }
+
     const { customerName, customerEmail, date, startTime, locator, magicLink, serviceName } = details;
     const link = magicLink || `${APP_URL}/mis-reservas/reserva/${locator}`;
     const subject = 'Confirmación de Reserva - Karma Beauty Salon';
@@ -126,6 +140,11 @@ export async function sendBookingConfirmationEmail(details: EmailBookingDetails)
 }
 
 export async function sendBookingUpdateEmail(details: EmailBookingDetails) {
+    const resend = getResendClient();
+    if (!resend) {
+        return { error: { message: "Email service not configured (RESEND_API_KEY missing)" }, data: null };
+    }
+
     const { customerName, customerEmail, date, startTime, locator, magicLink, serviceName } = details;
     const link = magicLink || `${APP_URL}/mis-reservas/reserva/${locator}`;
     const subject = 'Reserva Actualizada - Karma Beauty Salon';

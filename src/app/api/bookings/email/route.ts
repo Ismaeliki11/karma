@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { db } from '@/db';
 import { bookings, verificationTokens, services } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
