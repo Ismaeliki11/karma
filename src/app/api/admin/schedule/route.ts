@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-export const runtime = "edge";
 import { db } from '@/db';
 import { businessHours, availabilityExceptions, bookings } from '@/db/schema';
 import { eq, inArray, and, gte, lte, or, not } from 'drizzle-orm';
@@ -7,6 +6,8 @@ import { z } from 'zod';
 import { MADRID_TZ } from '@/lib/time-utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { addMinutes, isAfter, isBefore, parse } from 'date-fns';
+
+export const runtime = "edge";
 
 const scheduleSchema = z.object({
     weekly: z.array(z.object({

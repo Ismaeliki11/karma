@@ -1,6 +1,4 @@
-
 import { NextResponse } from 'next/server';
-export const runtime = "edge";
 import { db } from '@/db';
 import { bookings, services, verificationTokens } from '@/db/schema';
 import { nanoid } from 'nanoid';
@@ -11,6 +9,8 @@ import { addMinutes, isBefore, isAfter, addHours } from 'date-fns';
 import { fromZonedTime, toZonedTime, format } from 'date-fns-tz';
 import { MADRID_TZ } from '@/lib/time-utils';
 import { getBusinessBoundaries } from '@/lib/availability';
+
+export const runtime = "edge";
 
 // Schema Validation
 const bookingSchema = z.object({

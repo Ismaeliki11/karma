@@ -7,8 +7,7 @@ import { Calendar, Clock, MapPin, XCircle, AlertCircle, ArrowRight } from 'lucid
 import Link from 'next/link';
 import { DashboardClient } from './client';
 
-// Force dynamic because we read searchParams/cookies
-export const dynamic = 'force-dynamic';
+// Edge Runtime compatible
 export const runtime = "edge";
 
 export default async function DashboardPage(props: {

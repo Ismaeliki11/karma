@@ -3,7 +3,6 @@ import { ReservationCard } from '@/components/ReservationCard';
 import Link from 'next/link';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 export const runtime = "edge";
 
 interface Props {

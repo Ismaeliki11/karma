@@ -1,12 +1,13 @@
 
 import { NextResponse } from 'next/server';
-export const runtime = "edge";
 import { db } from '@/db';
 import { availabilityExceptions } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { validateScheduleLogic } from '@/lib/validation/schedule';
 import { checkScheduleConflicts } from '@/lib/conflicts';
+
+export const runtime = "edge";
 
 export async function GET() {
     try {

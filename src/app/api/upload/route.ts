@@ -1,7 +1,8 @@
 
 import { NextResponse } from 'next/server';
-export const runtime = "edge";
 import { v2 as cloudinary } from 'cloudinary';
+
+export const runtime = "edge";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

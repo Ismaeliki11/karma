@@ -1,9 +1,10 @@
 
 import { NextResponse } from 'next/server';
-export const runtime = "edge";
 import { db } from '@/db';
 import { services, bookings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+
+export const runtime = "edge";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
