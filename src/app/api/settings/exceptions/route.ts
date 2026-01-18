@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+export const runtime = "edge";
 import { db } from '@/db';
 import { availabilityExceptions } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';

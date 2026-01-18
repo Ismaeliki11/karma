@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+export const runtime = "edge";
 
 interface Props {
     params: Promise<{ locator: string }>;

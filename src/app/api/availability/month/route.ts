@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = "edge";
 import { getMonthAvailability } from '@/lib/availability';
 
 export async function GET(request: Request) {

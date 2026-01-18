@@ -9,6 +9,7 @@ import { DashboardClient } from './client';
 
 // Force dynamic because we read searchParams/cookies
 export const dynamic = 'force-dynamic';
+export const runtime = "edge";
 
 export default async function DashboardPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

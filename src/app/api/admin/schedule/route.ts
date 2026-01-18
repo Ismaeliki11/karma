@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = "edge";
 import { db } from '@/db';
 import { businessHours, availabilityExceptions, bookings } from '@/db/schema';
 import { eq, inArray, and, gte, lte, or, not } from 'drizzle-orm';

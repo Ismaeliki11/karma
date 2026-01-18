@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { RescheduleClient } from './client';
 
 export const dynamic = 'force-dynamic';
+export const runtime = "edge";
 
 export default async function ReschedulePage(props: {
     params: Promise<{ id: string }>;

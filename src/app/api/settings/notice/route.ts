@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = "edge";
 import { getSettings, saveSettings } from '@/lib/settings';
 
 export async function GET() {

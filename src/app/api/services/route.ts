@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+export const runtime = "edge";
 import { db } from '@/db';
 import { services } from '@/db/schema';
 import { nanoid } from 'nanoid';
