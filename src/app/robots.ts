@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = 'https://centroesteticakarma.netlify.app'; // Replace with actual domain if different
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://centroesteticakarma.netlify.app'; // Fallback to old URL if env var is missing during dev, but ideally should be set.
 
     return {
         rules: {

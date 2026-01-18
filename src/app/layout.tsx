@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_ES",
-    url: "https://centroesteticakarma.netlify.app",
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://centroesteticakarma.netlify.app",
     title: "Karma Centro de Estética",
     description: "Descubre tu mejor versión en Karma. Tratamientos exclusivos de manicura, pedicura y estética facial y corporal.",
     siteName: "Karma Centro de Estética",
