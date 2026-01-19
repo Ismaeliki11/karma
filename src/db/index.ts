@@ -18,8 +18,11 @@ try {
         console.error("DB_INIT_ERROR: TURSO_DATABASE_URL is missing!");
     }
 
+    // Force HTTPS for Vercel/Serverless compatibility if protocol is libsql://
+    const finalUrl = dbUrl?.replace("libsql://", "https://");
+
     client = createClient({
-        url: dbUrl || "file:local.db",
+        url: finalUrl || "file:local.db",
         authToken: authToken,
     });
     console.log("DB_INIT: LibSQL client created.");
