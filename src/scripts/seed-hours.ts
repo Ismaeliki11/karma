@@ -16,8 +16,10 @@ async function seedHours() {
         await db.insert(businessHours).values({
             id: `dow-${day}`,
             dayOfWeek: day,
-            openTime: "10:00",
-            closeTime: "20:00",
+            morningStart: "10:00",
+            morningEnd: "14:00",
+            afternoonStart: "16:00",
+            afternoonEnd: "20:00",
             isClosed: false
         }).onConflictDoNothing();
     }
@@ -26,8 +28,10 @@ async function seedHours() {
     await db.insert(businessHours).values({
         id: `dow-6`,
         dayOfWeek: 6,
-        openTime: "10:00",
-        closeTime: "14:00",
+        morningStart: "10:00",
+        morningEnd: "14:00",
+        afternoonStart: null,
+        afternoonEnd: null,
         isClosed: false
     }).onConflictDoNothing();
 
@@ -35,8 +39,10 @@ async function seedHours() {
     await db.insert(businessHours).values({
         id: `dow-0`,
         dayOfWeek: 0,
-        openTime: "10:00",
-        closeTime: "10:00", // Irrelevant if closed
+        morningStart: null,
+        morningEnd: null,
+        afternoonStart: null,
+        afternoonEnd: null,
         isClosed: true
     }).onConflictDoNothing();
 

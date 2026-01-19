@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import { z } from 'zod';
 
 import { desc, eq, and, or, gte, lte } from 'drizzle-orm';
-import { addMinutes, isBefore, isAfter, addHours } from 'date-fns';
+import { addMinutes, isBefore, isAfter, addHours, isEqual } from 'date-fns';
 import { fromZonedTime, toZonedTime, format } from 'date-fns-tz';
 import { MADRID_TZ } from '@/lib/time-utils';
 import { getBusinessBoundaries } from '@/lib/availability';
@@ -58,32 +58,34 @@ export async function POST(request: Request) {
             const endAtWithBuffer = addMinutes(endAt, 10); // 10 min courtesy for overlap check
 
             // 4. Validate Business Rules (Open/Close/Break)
-            // We use the same engine logic (or simplified strict check)
-            const boundaries = await getBusinessBoundaries(startAt); // passing Date object works
+            const boundaries = await getBusinessBoundaries(startAt);
 
             if (!boundaries || boundaries.isClosed) {
                 throw new Error("The salon is closed on this day.");
             }
 
-            // Parse boundaries to UTC for comparison
-            const dateStr = date;
-            const openMetric = fromZonedTime(`${dateStr} ${boundaries.openTime}`, MADRID_TZ);
-            const closeMetric = fromZonedTime(`${dateStr} ${boundaries.closeTime}`, MADRID_TZ);
+            // A booking must fit ENTIRELY within ONE of the available shifts (morning or afternoon)
+            let fitsInShift = false;
 
-            // Rule: Must fit within [Open, Close]
-            if (isBefore(startAt, openMetric) || isAfter(endAtWithBuffer, closeMetric)) {
-                throw new Error("Booking is outside business hours.");
+            const shifts = [];
+            if (boundaries.morning) shifts.push(boundaries.morning);
+            if (boundaries.afternoon) shifts.push(boundaries.afternoon);
+
+            for (const shift of shifts) {
+                const shiftStart = fromZonedTime(`${date} ${shift.start}`, MADRID_TZ);
+                const shiftEnd = fromZonedTime(`${date} ${shift.end}`, MADRID_TZ);
+
+                // Rule: Must fit within [ShiftStart, ShiftEnd]
+                // We use endAtWithBuffer to be safe with cleanup
+                if ((isAfter(startAt, shiftStart) || isEqual(startAt, shiftStart)) &&
+                    (isBefore(endAtWithBuffer, shiftEnd) || isEqual(endAtWithBuffer, shiftEnd))) {
+                    fitsInShift = true;
+                    break;
+                }
             }
 
-            // Rule: Break
-            if (boundaries.breakStart && boundaries.breakEnd) {
-                const breakStart = fromZonedTime(`${dateStr} ${boundaries.breakStart}`, MADRID_TZ);
-                const breakEnd = fromZonedTime(`${dateStr} ${boundaries.breakEnd}`, MADRID_TZ);
-
-                // Overlap: (Start < BreakEnd) AND (EndWithBuffer > BreakStart)
-                if (isBefore(startAt, breakEnd) && isAfter(endAtWithBuffer, breakStart)) {
-                    throw new Error("Booking conflicts with break time.");
-                }
+            if (!fitsInShift) {
+                throw new Error("Booking is outside business hours or conflicts with break time.");
             }
 
             // 5. Strict Overlap Check against DB
@@ -232,20 +234,24 @@ export async function PATCH(request: Request) {
                     return NextResponse.json({ error: "El salón está cerrado en esta fecha." }, { status: 409 });
                 }
 
-                const openMetric = fromZonedTime(`${newDate} ${boundaries.openTime}`, MADRID_TZ);
-                const closeMetric = fromZonedTime(`${newDate} ${boundaries.closeTime}`, MADRID_TZ);
+                let fitsInShift = false;
+                const shifts = [];
+                if (boundaries.morning) shifts.push(boundaries.morning);
+                if (boundaries.afternoon) shifts.push(boundaries.afternoon);
 
-                if (isBefore(startAt, openMetric) || isAfter(endAtWithBuffer, closeMetric)) {
-                    return NextResponse.json({ error: "La hora seleccionada está fuera del horario comercial." }, { status: 409 });
+                for (const shift of shifts) {
+                    const shiftStart = fromZonedTime(`${newDate} ${shift.start}`, MADRID_TZ);
+                    const shiftEnd = fromZonedTime(`${newDate} ${shift.end}`, MADRID_TZ);
+
+                    if ((isAfter(startAt, shiftStart) || isEqual(startAt, shiftStart)) &&
+                        (isBefore(endAtWithBuffer, shiftEnd) || isEqual(endAtWithBuffer, shiftEnd))) {
+                        fitsInShift = true;
+                        break;
+                    }
                 }
 
-                if (boundaries.breakStart && boundaries.breakEnd) {
-                    const breakStart = fromZonedTime(`${newDate} ${boundaries.breakStart}`, MADRID_TZ);
-                    const breakEnd = fromZonedTime(`${newDate} ${boundaries.breakEnd}`, MADRID_TZ);
-
-                    if (isBefore(startAt, breakEnd) && isAfter(endAtWithBuffer, breakStart)) {
-                        return NextResponse.json({ error: "La reserva coincide con el horario de descanso." }, { status: 409 });
-                    }
+                if (!fitsInShift) {
+                    return NextResponse.json({ error: "La hora seleccionada está fuera del horario comercial o coincide con el descanso." }, { status: 409 });
                 }
 
                 // B. Detect Overlaps (Excluding Self)

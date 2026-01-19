@@ -41,14 +41,17 @@ async function runVerification() {
 
     // Reset data for this date
     await db.delete(bookings).where(eq(bookings.date, dateStr));
-    await db.delete(availabilityExceptions).where(eq(availabilityExceptions.date, dateStr));
+    await db.delete(availabilityExceptions).where(eq(availabilityExceptions.startDate, dateStr));
 
     // Set explicit hours for this day via Exception (to be sure)
     await db.insert(availabilityExceptions).values({
         id: nanoid(),
-        date: dateStr,
-        openTime: "10:00",
-        closeTime: "14:00",
+        startDate: dateStr,
+        endDate: dateStr,
+        morningStart: "10:00",
+        morningEnd: "14:00",
+        afternoonStart: null,
+        afternoonEnd: null,
         isClosed: false
     });
 

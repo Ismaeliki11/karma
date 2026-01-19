@@ -17,18 +17,18 @@ async function main() {
         await db.insert(businessHours).values({
             id: `default-${h.dayOfWeek}`,
             dayOfWeek: h.dayOfWeek,
-            openTime: h.open,
-            closeTime: h.close,
-            breakStart: h.breakS,
-            breakEnd: h.breakE,
+            morningStart: h.open,
+            morningEnd: h.breakS,
+            afternoonStart: h.breakE,
+            afternoonEnd: h.close,
             isClosed: false
         }).onConflictDoUpdate({
             target: businessHours.dayOfWeek,
             set: {
-                openTime: h.open,
-                closeTime: h.close,
-                breakStart: h.breakS,
-                breakEnd: h.breakE
+                morningStart: h.open,
+                morningEnd: h.breakS || null,
+                afternoonStart: h.breakE || null,
+                afternoonEnd: h.close,
             }
         });
     }
@@ -37,12 +37,20 @@ async function main() {
     await db.insert(businessHours).values({
         id: 'default-0',
         dayOfWeek: 0,
-        openTime: "00:00",
-        closeTime: "00:00",
+        morningStart: null,
+        morningEnd: null,
+        afternoonStart: null,
+        afternoonEnd: null,
         isClosed: true
     }).onConflictDoUpdate({
         target: businessHours.dayOfWeek,
-        set: { isClosed: true }
+        set: {
+            morningStart: null,
+            morningEnd: null,
+            afternoonStart: null,
+            afternoonEnd: null,
+            isClosed: true
+        }
     });
 
     console.log('Business hours seeded!');

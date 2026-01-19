@@ -5,23 +5,26 @@ import { eq, inArray, and, gte, lte, or, not } from 'drizzle-orm';
 import { z } from 'zod';
 import { MADRID_TZ } from '@/lib/time-utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { addMinutes, isAfter, isBefore, parse } from 'date-fns';
+import { addMinutes, isAfter, isBefore, parse, format } from 'date-fns';
+
 
 
 
 const scheduleSchema = z.object({
     weekly: z.array(z.object({
         dayOfWeek: z.number().min(0).max(6), // 0=Sun
-        openTime: z.string().regex(/^\d{2}:\d{2}$/),
-        closeTime: z.string().regex(/^\d{2}:\d{2}$/),
-        breakStart: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(),
-        breakEnd: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(),
+        morningStart: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
+        morningEnd: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
+        afternoonStart: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
+        afternoonEnd: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
         isClosed: z.boolean(),
     })).optional(),
     exceptions: z.array(z.object({
         date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        openTime: z.string().optional(),
-        closeTime: z.string().optional(),
+        morningStart: z.string().nullable().optional(),
+        morningEnd: z.string().nullable().optional(),
+        afternoonStart: z.string().nullable().optional(),
+        afternoonEnd: z.string().nullable().optional(),
         isClosed: z.boolean(),
         reason: z.string().optional()
     })).optional()
@@ -53,14 +56,6 @@ export async function POST(request: Request) {
 
         // 1. Validate Weekly Changes
         if (weekly) {
-            // Fetch all future bookings? Or just check against simplified rule?
-            // "Validaciones obligatorias... indicar que no se puede aplicar el cambio hasta cancelar"
-            // We need to check if ANY future booking becomes invalid under new rules.
-            // This is heavy if we check ALL bookings.
-            // Optimization: Only check bookings for the specific dayOfWeek that is changing to be MORE restrictive.
-            // Simplification: Fetch all future bookings (from today). Check each against the new weekly rule.
-
-            // Get all future bookings
             const now = new Date();
             const futureBookings = await db.select().from(bookings).where(
                 and(
@@ -70,7 +65,6 @@ export async function POST(request: Request) {
             );
 
             for (const daySetting of weekly) {
-                // Find bookings for this day of week
                 const dayBookings = futureBookings.filter(b => {
                     const bDate = toZonedTime(b.startAt, MADRID_TZ);
                     return bDate.getDay() === daySetting.dayOfWeek;
@@ -80,45 +74,42 @@ export async function POST(request: Request) {
 
                 if (daySetting.isClosed) {
                     conflicts.push(...dayBookings.map(b => ({
-                        ...b, reason: `Day ${daySetting.dayOfWeek} is now closed`
+                        ...b, reason: `El día ${daySetting.dayOfWeek} ahora está cerrado`
                     })));
                     continue;
                 }
 
-                // Check Open/Close boundaries
-                // We need to compare HH:MM strings vs booking times in HH:MM
                 for (const b of dayBookings) {
                     const bDate = toZonedTime(b.startAt, MADRID_TZ);
-                    // Check exclusion logic
-                    // If bStart < NewOpen OR bEndWithBuffer > NewClose
-                    // OR intersects NewBreak
-                    // Re-use logic? Hard to reuse exactly without constructing Dates.
-                    // Manual check:
-
-                    // Helper to get minutes from midnight
-                    const getMins = (d: Date) => d.getHours() * 60 + d.getMinutes();
-                    const parseMins = (t: string) => parseInt(t.split(':')[0]) * 60 + parseInt(t.split(':')[1]);
-
-                    const bStartMins = getMins(bDate);
-                    // bEnd is b.endAt. Buffer is logical.
-                    // "No se permite que... end_at + cortesía sobrepase..."
+                    const dateStr = format(bDate, 'yyyy-MM-dd');
+                    const bStartMins = bDate.getHours() * 60 + bDate.getMinutes();
                     const bEndWithBuffer = addMinutes(b.endAt, 10);
-                    const bEndMins = getMins(toZonedTime(bEndWithBuffer, MADRID_TZ));
+                    const bEndDate = toZonedTime(bEndWithBuffer, MADRID_TZ);
+                    const bEndMins = bEndDate.getHours() * 60 + bEndDate.getMinutes();
 
-                    const newOpen = parseMins(daySetting.openTime);
-                    const newClose = parseMins(daySetting.closeTime);
-
-                    if (bStartMins < newOpen || bEndMins > newClose) {
-                        conflicts.push({ ...b, reason: `Outside new hours (${daySetting.openTime}-${daySetting.closeTime})` });
+                    let fitsInShift = false;
+                    const shifts = [];
+                    if (daySetting.morningStart && daySetting.morningEnd) {
+                        shifts.push({ start: daySetting.morningStart, end: daySetting.morningEnd });
+                    }
+                    if (daySetting.afternoonStart && daySetting.afternoonEnd) {
+                        shifts.push({ start: daySetting.afternoonStart, end: daySetting.afternoonEnd });
                     }
 
-                    if (daySetting.breakStart && daySetting.breakEnd) {
-                        const breakStart = parseMins(daySetting.breakStart);
-                        const breakEnd = parseMins(daySetting.breakEnd);
-                        // Overlap: Start < BreakEnd && End > BreakStart
-                        if (bStartMins < breakEnd && bEndMins > breakStart) {
-                            conflicts.push({ ...b, reason: `Conflicts with new break (${daySetting.breakStart}-${daySetting.breakEnd})` });
+                    for (const shift of shifts) {
+                        const [shStartH, shStartM] = shift.start.split(':').map(Number);
+                        const [shEndH, shEndM] = shift.end.split(':').map(Number);
+                        const shStartMins = shStartH * 60 + shStartM;
+                        const shEndMins = shEndH * 60 + shEndM;
+
+                        if (bStartMins >= shStartMins && bEndMins <= shEndMins) {
+                            fitsInShift = true;
+                            break;
                         }
+                    }
+
+                    if (!fitsInShift) {
+                        conflicts.push({ ...b, reason: `Fuera del nuevo horario o coincide con el descanso` });
                     }
                 }
             }
@@ -126,13 +117,7 @@ export async function POST(request: Request) {
 
         // 2. Validate Exceptions
         if (exceptions) {
-            const now = new Date();
-
             for (const exc of exceptions) {
-                // Check bookings for this specific date
-                // exc.date is YYYY-MM-DD
-                // Fetch bookings for this date
-                // We can query DB for this specific date range to be efficient
                 const dayStart = fromZonedTime(`${exc.date} 00:00`, MADRID_TZ);
                 const dayEnd = fromZonedTime(`${exc.date} 23:59`, MADRID_TZ);
 
@@ -146,23 +131,38 @@ export async function POST(request: Request) {
 
                 if (dayBookings.length > 0) {
                     if (exc.isClosed) {
-                        conflicts.push(...dayBookings.map(b => ({ ...b, reason: `Date ${exc.date} is now closed` })));
-                    } else if (exc.openTime && exc.closeTime) {
-                        // Check boundaries similar to above
-                        const getMins = (d: Date) => d.getHours() * 60 + d.getMinutes();
-                        const parseMins = (t: string) => parseInt(t.split(':')[0]) * 60 + parseInt(t.split(':')[1]);
-
-                        const newOpen = parseMins(exc.openTime);
-                        const newClose = parseMins(exc.closeTime);
-
+                        conflicts.push(...dayBookings.map(b => ({ ...b, reason: `La fecha ${exc.date} ahora está cerrada` })));
+                    } else {
                         for (const b of dayBookings) {
                             const bDate = toZonedTime(b.startAt, MADRID_TZ);
-                            const bStartMins = getMins(bDate);
+                            const bStartMins = bDate.getHours() * 60 + bDate.getMinutes();
                             const bEndWithBuffer = addMinutes(b.endAt, 10);
-                            const bEndMins = getMins(toZonedTime(bEndWithBuffer, MADRID_TZ));
+                            const bEndDate = toZonedTime(bEndWithBuffer, MADRID_TZ);
+                            const bEndMins = bEndDate.getHours() * 60 + bEndDate.getMinutes();
 
-                            if (bStartMins < newOpen || bEndMins > newClose) {
-                                conflicts.push({ ...b, reason: `Outside exception hours on ${exc.date}` });
+                            let fitsInShift = false;
+                            const shifts = [];
+                            if (exc.morningStart && exc.morningEnd) {
+                                shifts.push({ start: exc.morningStart, end: exc.morningEnd });
+                            }
+                            if (exc.afternoonStart && exc.afternoonEnd) {
+                                shifts.push({ start: exc.afternoonStart, end: exc.afternoonEnd });
+                            }
+
+                            for (const shift of shifts) {
+                                const [shStartH, shStartM] = shift.start.split(':').map(Number);
+                                const [shEndH, shEndM] = shift.end.split(':').map(Number);
+                                const shStartMins = shStartH * 60 + shStartM;
+                                const shEndMins = shEndH * 60 + shEndM;
+
+                                if (bStartMins >= shStartMins && bEndMins <= shEndMins) {
+                                    fitsInShift = true;
+                                    break;
+                                }
+                            }
+
+                            if (!fitsInShift) {
+                                conflicts.push({ ...b, reason: `Fuera del nuevo horario de excepción en ${exc.date}` });
                             }
                         }
                     }
@@ -187,24 +187,33 @@ export async function POST(request: Request) {
         await db.transaction(async (tx) => {
             if (weekly) {
                 for (const w of weekly) {
+                    const { dayOfWeek, ...data } = w;
                     await tx.insert(businessHours).values({
-                        id: `dow-${w.dayOfWeek}`,
-                        ...w
+                        id: `dow-${dayOfWeek}`,
+                        dayOfWeek,
+                        ...data
                     }).onConflictDoUpdate({
                         target: businessHours.dayOfWeek,
-                        set: w
+                        set: data
                     });
                 }
             }
 
             if (exceptions) {
                 for (const e of exceptions) {
+                    const { date, ...data } = e;
                     await tx.insert(availabilityExceptions).values({
-                        id: `exc-${e.date}`,
-                        ...e
+                        id: `exc-${date}`,
+                        startDate: date,
+                        endDate: date,
+                        ...data
                     }).onConflictDoUpdate({
-                        target: availabilityExceptions.date,
-                        set: e
+                        target: availabilityExceptions.startDate, // Assuming startDate is used for single-day conflict for now or match schema
+                        set: {
+                            startDate: date,
+                            endDate: date,
+                            ...data
+                        }
                     });
                 }
             }
