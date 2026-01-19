@@ -28,8 +28,11 @@ export async function GET() {
 
         return NextResponse.json(hours);
     } catch (error) {
-        console.error('Error fetching business hours:', error);
-        return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
+        console.error('API_ERROR [GET /api/settings/business-hours]:', error);
+        return NextResponse.json({
+            error: 'Failed to fetch settings',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 
@@ -114,8 +117,11 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error saving business hours:', error);
-        return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
+        console.error('API_ERROR [POST /api/settings/business-hours]:', error);
+        return NextResponse.json({
+            error: 'Failed to save settings',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 

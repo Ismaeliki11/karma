@@ -34,7 +34,7 @@ export default function ServiciosPage() {
     };
 
     return (
-        <div className="space-y-8 md:space-y-12 pb-24 md:pb-0">
+        <div className="space-y-8 md:space-y-12 pb-24">
             <div className="text-center px-4">
                 <h1 className="text-2xl md:text-3xl font-light tracking-wide text-neutral-900">Nuestros Servicios</h1>
                 <p className="mt-2 text-sm md:text-base text-neutral-500">Calidad y dedicación en cada detalle</p>
@@ -107,7 +107,7 @@ export default function ServiciosPage() {
                 ))}
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-neutral-100 flex justify-center md:static md:bg-transparent md:border-t-0 md:p-0 z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-neutral-100 flex justify-center z-50">
                 <button
                     onClick={handleNext}
                     disabled={!booking.serviceId}

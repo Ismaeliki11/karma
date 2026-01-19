@@ -14,8 +14,11 @@ export async function GET() {
         const exceptions = await db.select().from(availabilityExceptions).orderBy(desc(availabilityExceptions.date));
         return NextResponse.json(exceptions);
     } catch (error) {
-        console.error('Error fetching exceptions:', error);
-        return NextResponse.json({ error: 'Failed to fetch exceptions' }, { status: 500 });
+        console.error('API_ERROR [GET /api/settings/exceptions]:', error);
+        return NextResponse.json({
+            error: 'Failed to fetch exceptions',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 
@@ -90,8 +93,11 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error saving exception:', error);
-        return NextResponse.json({ error: 'Failed to save exception' }, { status: 500 });
+        console.error('API_ERROR [POST /api/settings/exceptions]:', error);
+        return NextResponse.json({
+            error: 'Failed to save exception',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 

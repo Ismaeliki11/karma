@@ -8,7 +8,11 @@ export async function GET() {
         const settings = await getSettings();
         return NextResponse.json(settings.publicNotice);
     } catch (error) {
-        return NextResponse.json({ active: false, message: "" });
+        console.error('API_ERROR [GET /api/settings/notice]:', error);
+        return NextResponse.json({
+            error: 'Failed to fetch notice',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 
@@ -25,7 +29,10 @@ export async function POST(request: Request) {
         await saveSettings(settings);
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error saving notice:", error);
-        return NextResponse.json({ error: "Failed to save" }, { status: 500 });
+        console.error("API_ERROR [POST /api/settings/notice]:", error);
+        return NextResponse.json({
+            error: "Failed to save",
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }

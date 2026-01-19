@@ -11,8 +11,11 @@ export async function GET() {
         const allServices = await db.select().from(services);
         return NextResponse.json(allServices);
     } catch (error) {
-        console.error('Error fetching services:', error);
-        return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 });
+        console.error('API_ERROR [GET /api/services]:', error);
+        return NextResponse.json({
+            error: 'Failed to fetch services',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 
