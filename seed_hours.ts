@@ -1,5 +1,6 @@
 import { db } from './src/db/index';
 import { businessHours } from './src/db/schema';
+import { nanoid } from 'nanoid';
 
 async function main() {
     console.log('Seeding default business hours...');
@@ -15,27 +16,28 @@ async function main() {
 
     for (const h of defaults) {
         await db.insert(businessHours).values({
-            id: `default-${h.dayOfWeek}`,
+            id: nanoid(),
             dayOfWeek: h.dayOfWeek,
             morningStart: h.open,
-            morningEnd: h.breakS,
-            afternoonStart: h.breakE,
-            afternoonEnd: h.close,
+            morningEnd: h.breakS || h.close, // End morning at close if no break
+            afternoonStart: h.breakE || null,
+            afternoonEnd: h.breakE ? h.close : null, // Only have afternoon if there's a break
             isClosed: false
         }).onConflictDoUpdate({
             target: businessHours.dayOfWeek,
             set: {
                 morningStart: h.open,
-                morningEnd: h.breakS || null,
+                morningEnd: h.breakS || h.close,
                 afternoonStart: h.breakE || null,
-                afternoonEnd: h.close,
+                afternoonEnd: h.breakE ? h.close : null,
+                isClosed: false
             }
         });
     }
 
     // Sun
     await db.insert(businessHours).values({
-        id: 'default-0',
+        id: nanoid(),
         dayOfWeek: 0,
         morningStart: null,
         morningEnd: null,
