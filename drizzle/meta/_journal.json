@@ -15,6 +15,13 @@
       "when": 1768479647124,
       "tag": "0001_clean_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1768815734609,
+      "tag": "0002_tricky_boom_boom",
+      "breakpoints": true
     }
   ]
 }

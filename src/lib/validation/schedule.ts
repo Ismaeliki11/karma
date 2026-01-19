@@ -1,11 +1,17 @@
 
 import { parse, isAfter, isBefore, isEqual } from 'date-fns';
 
-export interface TimeRange {
-    openTime: string;
-    closeTime: string;
-    breakStart?: string | null;
-    breakEnd?: string | null;
+export interface Shift {
+    start: string;
+    end: string;
+}
+
+export interface DailyScheduleInput {
+    isClosed?: boolean;
+    morningStart?: string | null;
+    morningEnd?: string | null;
+    afternoonStart?: string | null;
+    afternoonEnd?: string | null;
 }
 
 export interface ValidationResult {
@@ -16,42 +22,51 @@ export interface ValidationResult {
 /**
  * Validates a single day's schedule logic.
  * Ensures:
- * 1. Open < Close
- * 2. Break Start < Break End
- * 3. Break is fully contained within Open and Close
+ * 1. Morning Start < Morning End
+ * 2. Afternoon Start < Afternoon End
+ * 3. Morning End < Afternoon Start (if both exist)
  */
-export function validateScheduleLogic(schedule: TimeRange): ValidationResult {
-    const { openTime, closeTime, breakStart, breakEnd } = schedule;
+export function validateScheduleLogic(schedule: DailyScheduleInput): ValidationResult {
+    const { isClosed, morningStart, morningEnd, afternoonStart, afternoonEnd } = schedule;
 
-    // Helper: Parse HH:mm to Date (using dummy date)
-    const toDate = (time: string) => parse(time, 'HH:mm', new Date());
+    if (isClosed) return { isValid: true };
 
-    const open = toDate(openTime);
-    const close = toDate(closeTime);
+    // Helper: Parse HH:mm
+    const toDate = (time: string, baseDate = new Date()) => parse(time, 'HH:mm', baseDate);
 
-    if (!isBefore(open, close)) {
-        return { isValid: false, error: 'La hora de apertura debe ser anterior al cierre.' };
+    let hasMorning = false;
+    let hasAfternoon = false;
+
+    // Validate Morning
+    if (morningStart && morningEnd) {
+        hasMorning = true;
+        if (!isBefore(toDate(morningStart), toDate(morningEnd))) {
+            return { isValid: false, error: 'Mañana: Hora fin debe ser posterior al inicio.' };
+        }
+    } else if (morningStart || morningEnd) {
+        return { isValid: false, error: 'Mañana: Debes indicar inicio y fin.' };
     }
 
-    if (breakStart && breakEnd) {
-        const bStart = toDate(breakStart);
-        const bEnd = toDate(breakEnd);
+    // Validate Afternoon
+    if (afternoonStart && afternoonEnd) {
+        hasAfternoon = true;
+        if (!isBefore(toDate(afternoonStart), toDate(afternoonEnd))) {
+            return { isValid: false, error: 'Tarde: Hora fin debe ser posterior al inicio.' };
+        }
+    } else if (afternoonStart || afternoonEnd) {
+        return { isValid: false, error: 'Tarde: Debes indicar inicio y fin.' };
+    }
 
-        if (!isBefore(bStart, bEnd)) {
-            return { isValid: false, error: 'El inicio del descanso debe ser anterior al fin.' };
+    // Check Overlap / Order if both exist
+    if (hasMorning && hasAfternoon) {
+        // Morning End must be before Afternoon Start
+        if (!isBefore(toDate(morningEnd!), toDate(afternoonStart!))) {
+            return { isValid: false, error: 'Solapamiento: El turno de mañana debe terminar antes de que empiece la tarde.' };
         }
+    }
 
-        // Break must be within Open/Close
-        // We allow break to start AT open (though weird) or end AT close.
-        // Strict containment: open <= bStart < bEnd <= close
-        if (isBefore(bStart, open)) {
-            return { isValid: false, error: 'El descanso no puede empezar antes de abrir.' };
-        }
-        if (isAfter(bEnd, close)) {
-            return { isValid: false, error: 'El descanso no puede terminar después de cerrar.' };
-        }
-    } else if ((breakStart && !breakEnd) || (!breakStart && breakEnd)) {
-        return { isValid: false, error: 'Debes definir inicio y fin del descanso.' };
+    if (!hasMorning && !hasAfternoon) {
+        return { isValid: false, error: 'Debes configurar al menos un turno (Mañana o Tarde) o cerrar el día.' };
     }
 
     return { isValid: true };

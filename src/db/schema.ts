@@ -49,20 +49,31 @@ export const verificationTokens = sqliteTable('verification_tokens', {
 export const businessHours = sqliteTable('business_hours', {
     id: text('id').primaryKey(),
     dayOfWeek: integer('day_of_week').notNull().unique(), // 0=Sun, 1=Mon, ...
-    openTime: text('open_time').notNull(), // HH:MM
-    closeTime: text('close_time').notNull(), // HH:MM
-    breakStart: text('break_start'), // HH:MM
-    breakEnd: text('break_end'), // HH:MM
+
+    // Morning Shift
+    morningStart: text('morning_start'), // HH:MM
+    morningEnd: text('morning_end'), // HH:MM
+
+    // Afternoon Shift
+    afternoonStart: text('afternoon_start'), // HH:MM
+    afternoonEnd: text('afternoon_end'), // HH:MM
+
     isClosed: integer('is_closed', { mode: 'boolean' }).notNull().default(false),
 });
 
 export const availabilityExceptions = sqliteTable('availability_exceptions', {
     id: text('id').primaryKey(),
-    date: text('date').notNull().unique(), // YYYY-MM-DD
-    openTime: text('open_time'), // HH:MM (Optional override)
-    closeTime: text('close_time'), // HH:MM (Optional override)
-    breakStart: text('break_start'), // HH:MM
-    breakEnd: text('break_end'), // HH:MM
+    startDate: text('start_date').notNull(), // YYYY-MM-DD
+    endDate: text('end_date').notNull(), // YYYY-MM-DD
+
+    // Morning Shift Override
+    morningStart: text('morning_start'),
+    morningEnd: text('morning_end'),
+
+    // Afternoon Shift Override
+    afternoonStart: text('afternoon_start'),
+    afternoonEnd: text('afternoon_end'),
+
     isClosed: integer('is_closed', { mode: 'boolean' }).notNull().default(false),
     reason: text('reason'),
 });

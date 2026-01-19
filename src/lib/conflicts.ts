@@ -16,64 +16,63 @@ export interface ScheduleConflict {
 
 export interface ProposedSchedule {
     dayOfWeek?: number; // For recurring checks
-    date?: string; // For exception checks YYYY-MM-DD
-    openTime: string;
-    closeTime: string;
-    breakStart?: string | null;
-    breakEnd?: string | null;
+    date?: string; // For exception checks YYYY-MM-DD (Exact Date)
+    range?: { start: string, end: string }; // For Range Exceptions
+    morningStart?: string | null;
+    morningEnd?: string | null;
+    afternoonStart?: string | null;
+    afternoonEnd?: string | null;
     isClosed: boolean;
 }
 
 /**
  * Checks for conflicts between a proposed schedule change and existing bookings.
- * Can check a recurring weekly change OR a specific date exception.
  */
 export async function checkScheduleConflicts(proposal: ProposedSchedule): Promise<ScheduleConflict[]> {
     const conflicts: ScheduleConflict[] = [];
+    const now = new Date();
 
     // 1. Fetch relevant bookings
     let relevantBookings;
-    const now = new Date();
 
     if (proposal.date) {
-        // Exception Case: Specific Date
-        // Fetch bookings for this specific date
-        // Note: bookings stored in UTC/Zoned logic? 
-        // Schema usually stores specific timestamps startAt/endAt.
-        // We need bookings that FALL on this day in Madrid Time.
-        // Simplified approach: Fetch bookings that start on this day string.
+        // Single Date Exception
         relevantBookings = await db.select().from(bookings).where(
             and(
-                eq(bookings.date, proposal.date), // Assuming 'date' column matches YYYY-MM-DD
+                eq(bookings.date, proposal.date),
+                ne(bookings.status, 'CANCELLED')
+            )
+        );
+    } else if (proposal.range) {
+        // Range Exception
+        relevantBookings = await db.select().from(bookings).where(
+            and(
+                gte(bookings.date, proposal.range.start),
+                lte(bookings.date, proposal.range.end),
                 ne(bookings.status, 'CANCELLED')
             )
         );
     } else if (proposal.dayOfWeek !== undefined) {
-        // Recurring Case: All future bookings on this day of week
-        // This is potentially heavy, but necessary for safety.
-        // We fetch ALL future active bookings.
+        // Recurring Weekly
         const allFuture = await db.select().from(bookings).where(
             and(
                 gte(bookings.startAt, now),
                 ne(bookings.status, 'CANCELLED')
             )
         );
-
-        // Filter in memory for correct Day of Week
         relevantBookings = allFuture.filter(b => {
             const bDate = toZonedTime(b.startAt, MADRID_TZ);
-            // getDay() 0=Sun, 6=Sat.
             return bDate.getDay() === proposal.dayOfWeek;
         });
     } else {
-        throw new Error("Must provide dayOfWeek or date for conflict check");
+        throw new Error("Invalid proposal scope");
     }
 
     if (!relevantBookings || relevantBookings.length === 0) return [];
 
     // 2. Evaluate Conflicts
     for (const booking of relevantBookings) {
-        // If closed, EVERYTHING is a conflict
+        // If closed, everything is a conflict
         if (proposal.isClosed) {
             conflicts.push({
                 bookingId: booking.id,
@@ -85,7 +84,6 @@ export async function checkScheduleConflicts(proposal: ProposedSchedule): Promis
             continue;
         }
 
-        // Logic Helpers
         const toMinutes = (time: string) => {
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
@@ -97,37 +95,36 @@ export async function checkScheduleConflicts(proposal: ProposedSchedule): Promis
         const bStartMins = bookingStart.getHours() * 60 + bookingStart.getMinutes();
         const bEndMins = bookingEnd.getHours() * 60 + bookingEnd.getMinutes();
 
-        const openMins = toMinutes(proposal.openTime);
-        const closeMins = toMinutes(proposal.closeTime);
+        // Check if booking fits in ANY valid shift
+        let fits = false;
 
-        // Check 1: Out of Bounds
-        // Strict: Booking must start >= Open AND End <= Close
-        if (bStartMins < openMins || bEndMins > closeMins) {
+        // Morning
+        if (proposal.morningStart && proposal.morningEnd) {
+            const mStart = toMinutes(proposal.morningStart);
+            const mEnd = toMinutes(proposal.morningEnd);
+            // Must be fully contained: mStart <= bStart AND bEnd <= mEnd
+            if (bStartMins >= mStart && bEndMins <= mEnd) {
+                fits = true;
+            }
+        }
+
+        // Afternoon (if not already fit in morning)
+        if (!fits && proposal.afternoonStart && proposal.afternoonEnd) {
+            const aStart = toMinutes(proposal.afternoonStart);
+            const aEnd = toMinutes(proposal.afternoonEnd);
+            if (bStartMins >= aStart && bEndMins <= aEnd) {
+                fits = true;
+            }
+        }
+
+        if (!fits) {
             conflicts.push({
                 bookingId: booking.id,
                 customerName: booking.customerName,
                 date: booking.date,
                 time: booking.startTime,
-                reason: `Fuera de nuevo horario (${proposal.openTime} - ${proposal.closeTime})`
+                reason: `Fuera del nuevo horario.`
             });
-            continue;
-        }
-
-        // Check 2: Break Overlap
-        if (proposal.breakStart && proposal.breakEnd) {
-            const breakStartMins = toMinutes(proposal.breakStart);
-            const breakEndMins = toMinutes(proposal.breakEnd);
-
-            // Overlap: (StartA < EndB) and (EndA > StartB)
-            if (bStartMins < breakEndMins && bEndMins > breakStartMins) {
-                conflicts.push({
-                    bookingId: booking.id,
-                    customerName: booking.customerName,
-                    date: booking.date,
-                    time: booking.startTime,
-                    reason: `Coincide con descanso (${proposal.breakStart} - ${proposal.breakEnd})`
-                });
-            }
         }
     }
 

@@ -12,11 +12,12 @@ import { toast } from "sonner";
 
 interface Exception {
     id: string;
-    date: string;
-    openTime?: string;
-    closeTime?: string;
-    breakStart?: string;
-    breakEnd?: string;
+    startDate: string;
+    endDate: string;
+    morningStart?: string;
+    morningEnd?: string;
+    afternoonStart?: string;
+    afternoonEnd?: string;
     isClosed: boolean;
     reason?: string;
 }
@@ -27,12 +28,14 @@ export function AvailabilityExceptions() {
     const [isAdding, setIsAdding] = useState(false);
 
     // New Exception State
-    const [newDate, setNewDate] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
     const [isClosed, setIsClosed] = useState(true);
-    const [openTime, setOpenTime] = useState("09:00");
-    const [closeTime, setCloseTime] = useState("20:00");
-    const [breakStart, setBreakStart] = useState("");
-    const [breakEnd, setBreakEnd] = useState("");
+
+    const [morningStart, setMorningStart] = useState("");
+    const [morningEnd, setMorningEnd] = useState("");
+    const [afternoonStart, setAfternoonStart] = useState("");
+    const [afternoonEnd, setAfternoonEnd] = useState("");
 
     const [reason, setReason] = useState("");
 
@@ -61,8 +64,8 @@ export function AvailabilityExceptions() {
     }, []);
 
     const handleAdd = async (force = false) => {
-        if (!newDate) {
-            toast.error("Selecciona una fecha");
+        if (!startDate || !endDate) {
+            toast.error("Selecciona fecha inicio y fin");
             return;
         }
 
@@ -73,12 +76,13 @@ export function AvailabilityExceptions() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    date: newDate,
+                    startDate,
+                    endDate,
                     isClosed,
-                    openTime: isClosed ? null : openTime,
-                    closeTime: isClosed ? null : closeTime,
-                    breakStart: (!isClosed && breakStart) ? breakStart : null,
-                    breakEnd: (!isClosed && breakEnd) ? breakEnd : null,
+                    morningStart: (!isClosed && morningStart) ? morningStart : null,
+                    morningEnd: (!isClosed && morningEnd) ? morningEnd : null,
+                    afternoonStart: (!isClosed && afternoonStart) ? afternoonStart : null,
+                    afternoonEnd: (!isClosed && afternoonEnd) ? afternoonEnd : null,
                     reason
                 }),
             });
@@ -87,10 +91,13 @@ export function AvailabilityExceptions() {
 
             if (res.ok) {
                 setIsAdding(false);
-                setNewDate("");
+                setStartDate("");
+                setEndDate("");
                 setReason("");
-                setBreakStart("");
-                setBreakEnd("");
+                setMorningStart("");
+                setMorningEnd("");
+                setAfternoonStart("");
+                setAfternoonEnd("");
                 setShowConflictModal(false);
                 fetchExceptions();
             } else if (res.status === 409) {
@@ -125,7 +132,7 @@ export function AvailabilityExceptions() {
                         <CalendarIcon size={20} className="text-purple-500" />
                         Días Festivos / Excepciones
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Cierra días específicos o cambia el horario sin modificar la semana habitual.</p>
+                    <p className="text-sm text-gray-500 mt-1">Cierra días específicos o cambia el horario. Puedes seleccionar rangos de fechas.</p>
                 </div>
                 <Button onClick={() => setIsAdding(!isAdding)} variant="outline" className="gap-2">
                     <Plus size={18} />
@@ -136,29 +143,47 @@ export function AvailabilityExceptions() {
             {isAdding && (
                 <div className="bg-purple-50/50 p-6 rounded-2xl border border-purple-100 mb-8 animate-in fade-in slide-in-from-top-2">
                     <h4 className="font-bold text-gray-800 mb-4">Nueva Excepción</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha</label>
-                            <input
-                                type="date"
-                                value={newDate}
-                                onChange={(e) => setNewDate(e.target.value)}
-                                className="w-full p-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
-                            />
+
+                    <div className="space-y-6">
+                        {/* Dates and Reason */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha Inicio</label>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => {
+                                        setStartDate(e.target.value);
+                                        if (!endDate) setEndDate(e.target.value);
+                                    }}
+                                    className="w-full p-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha Fin</label>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    min={startDate}
+                                    className="w-full p-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Motivo (Opcional)</label>
+                                <input
+                                    type="text"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    placeholder="Ej: Festivo Local"
+                                    className="w-full p-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Motivo (Opcional)</label>
-                            <input
-                                type="text"
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                placeholder="Ej: Festivo Local"
-                                className="w-full p-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
-                            />
-                        </div>
-
-                        <div className="flex items-end pb-2">
+                        {/* Closed Toggle */}
+                        <div className="flex items-center pb-2">
                             <label className="flex items-center gap-3 cursor-pointer select-none">
                                 <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isClosed ? 'bg-purple-600' : 'bg-gray-300'}`}>
                                     <div className={`bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${isClosed ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -169,61 +194,71 @@ export function AvailabilityExceptions() {
                                     onChange={(e) => setIsClosed(e.target.checked)}
                                     className="hidden"
                                 />
-                                <span className="text-sm font-bold text-gray-700">Cerrado todo el día</span>
+                                <span className="text-sm font-bold text-gray-700">Cerrado todo el periodo</span>
                             </label>
                         </div>
 
+                        {/* Hours Inputs */}
                         {!isClosed && (
-                            <>
-                                <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Horario Especial</label>
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="time"
-                                                value={openTime}
-                                                onChange={(e) => setOpenTime(e.target.value)}
-                                                className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                                            />
-                                            <span className="text-gray-300 font-bold">-</span>
-                                            <input
-                                                type="time"
-                                                value={closeTime}
-                                                onChange={(e) => setCloseTime(e.target.value)}
-                                                className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Descanso (Opcional)</label>
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="time"
-                                                value={breakStart}
-                                                onChange={(e) => setBreakStart(e.target.value)}
-                                                className="p-2.5 rounded-xl border border-gray-200 text-sm font-medium w-full focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                                            />
-                                            <span className="text-gray-300 font-bold">-</span>
-                                            <input
-                                                type="time"
-                                                value={breakEnd}
-                                                onChange={(e) => setBreakEnd(e.target.value)}
-                                                className="p-2.5 rounded-xl border border-gray-200 text-sm font-medium w-full focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                                            />
-                                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-white/50 rounded-xl border border-purple-100/50">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                        Mañana
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="time"
+                                            value={morningStart}
+                                            onChange={(e) => setMorningStart(e.target.value)}
+                                            className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                            placeholder="--:--"
+                                        />
+                                        <span className="text-gray-300 font-bold">-</span>
+                                        <input
+                                            type="time"
+                                            value={morningEnd}
+                                            onChange={(e) => setMorningEnd(e.target.value)}
+                                            className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                            placeholder="--:--"
+                                        />
                                     </div>
                                 </div>
-                            </>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                                        Tarde
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="time"
+                                            value={afternoonStart}
+                                            onChange={(e) => setAfternoonStart(e.target.value)}
+                                            className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                                            placeholder="--:--"
+                                        />
+                                        <span className="text-gray-300 font-bold">-</span>
+                                        <input
+                                            type="time"
+                                            value={afternoonEnd}
+                                            onChange={(e) => setAfternoonEnd(e.target.value)}
+                                            className="p-2.5 rounded-xl border border-gray-200 text-sm font-bold w-full focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                                            placeholder="--:--"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         )}
-                    </div>
-                    <div className="mt-6 flex justify-end gap-3 border-t border-purple-100 pt-4">
-                        <Button
-                            onClick={handleAdd.bind(null, false)}
-                            className="bg-purple-600 text-white hover:bg-purple-700 font-bold px-6"
-                        >
-                            Guardar Excepción
-                        </Button>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <Button
+                                onClick={handleAdd.bind(null, false)}
+                                className="bg-purple-600 text-white hover:bg-purple-700 font-bold px-6"
+                            >
+                                Guardar Excepción
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -238,25 +273,36 @@ export function AvailabilityExceptions() {
                     </div>
                 ) : (
                     exceptions.map((ex) => (
-                        <div key={ex.id} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:shadow-sm transition-all group">
-                            <div className="flex items-center gap-4">
+                        <div key={ex.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:shadow-sm transition-all group gap-4">
+                            <div className="flex items-start md:items-center gap-4">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${ex.isClosed ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
                                     {ex.isClosed ? <AlertCircle size={20} /> : <Clock size={20} />}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-gray-900 capitalize text-lg">
-                                        {format(new Date(ex.date), "EEEE d 'de' MMMM", { locale: es })}
+                                    <p className="font-bold text-gray-900 text-lg">
+                                        {format(new Date(ex.startDate), "d MMM", { locale: es })}
+                                        {ex.startDate !== ex.endDate && ` - ${format(new Date(ex.endDate), "d MMM", { locale: es })}`}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ex.isClosed ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                            {ex.isClosed ? "CERRADO" : `${ex.openTime} - ${ex.closeTime}`}
-                                        </span>
-                                        {ex.breakStart && !ex.isClosed && (
-                                            <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-600">
-                                                Descanso: {ex.breakStart}-{ex.breakEnd}
+                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                        {ex.isClosed ? (
+                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                                                CERRADO
                                             </span>
+                                        ) : (
+                                            <>
+                                                {ex.morningStart && (
+                                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                                                        M: {ex.morningStart}-{ex.morningEnd}
+                                                    </span>
+                                                )}
+                                                {ex.afternoonStart && (
+                                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700">
+                                                        T: {ex.afternoonStart}-{ex.afternoonEnd}
+                                                    </span>
+                                                )}
+                                            </>
                                         )}
-                                        {ex.reason && <span className="text-sm text-gray-500 font-medium">• {ex.reason}</span>}
+                                        {ex.reason && <span className="text-sm text-gray-500 font-medium md:ml-1">• {ex.reason}</span>}
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +310,7 @@ export function AvailabilityExceptions() {
                                 onClick={() => setConfirmDeleteId(ex.id)}
                                 variant="ghost"
                                 size="sm"
-                                className="text-gray-300 hover:text-red-500 hover:bg-red-50"
+                                className="text-gray-300 hover:text-red-500 hover:bg-red-50 self-end md:self-auto"
                             >
                                 <Trash2 size={18} />
                             </Button>
@@ -286,7 +332,7 @@ export function AvailabilityExceptions() {
                 onClose={() => setConfirmDeleteId(null)}
                 onConfirm={handleDelete}
                 title="¿Eliminar Excepción?"
-                description="Se restablecerá el horario habitual para este día."
+                description="Se restablecerá el horario habitual para este periodo."
                 confirmText="Eliminar"
                 variant="danger"
             />

@@ -3,16 +3,16 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Clock, Save, AlertCircle, RefreshCw } from "lucide-react";
+import { Clock, Save, RefreshCw } from "lucide-react";
 import { ConflictModal } from "./ConflictModal";
 import { toast } from "sonner";
 
 interface BusinessDay {
     dayOfWeek: number;
-    openTime: string;
-    closeTime: string;
-    breakStart: string | null;
-    breakEnd: string | null;
+    morningStart: string | null;
+    morningEnd: string | null;
+    afternoonStart: string | null;
+    afternoonEnd: string | null;
     isClosed: boolean;
 }
 
@@ -33,14 +33,12 @@ export function BusinessHoursEditor() {
         try {
             const res = await fetch("/api/settings/business-hours");
             const data = await res.json();
-            // Ensure 0-6 sort
-            setHours(data.sort((a: BusinessDay, b: BusinessDay) => a.dayOfWeek - b.dayOfWeek).map((d: BusinessDay) => ({
-                ...d,
-                breakStart: d.breakStart || "14:00",
-                breakEnd: d.breakEnd || "16:00"
-            })));
+            // Ensure 0-6 sort and handle nulls ensuring empty strings for inputs?
+            // Actually better to keep nulls and handle inputs carefully.
+            setHours(data.sort((a: BusinessDay, b: BusinessDay) => a.dayOfWeek - b.dayOfWeek));
         } catch (error) {
             console.error("Failed to load hours");
+            toast.error("Error al cargar horarios");
         } finally {
             setLoading(false);
         }
@@ -48,7 +46,9 @@ export function BusinessHoursEditor() {
 
     const handleChange = (index: number, field: keyof BusinessDay, value: any) => {
         const newHours = [...hours];
-        newHours[index] = { ...newHours[index], [field]: value };
+        // If empty string, convert to null
+        const val = value === "" ? null : value;
+        newHours[index] = { ...newHours[index], [field]: val };
         setHours(newHours);
     };
 
@@ -100,13 +100,12 @@ export function BusinessHoursEditor() {
             </div>
 
             <div className="space-y-4">
-
                 <div className="divide-y divide-gray-100">
                     {hours.map((day, index) => (
                         <div key={day.dayOfWeek} className={`py-4 transition-colors ${day.isClosed ? 'opacity-50 grayscale' : ''}`}>
                             <div className="flex flex-col md:flex-row md:items-center gap-4">
 
-                                <div className="flex items-center justify-between md:w-40 shrink-0">
+                                <div className="flex items-center justify-between md:w-32 shrink-0">
                                     <span className="font-bold text-gray-900 w-24">{DAYS[day.dayOfWeek]}</span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -115,49 +114,57 @@ export function BusinessHoursEditor() {
                                             onChange={(e) => handleChange(index, 'isClosed', !e.target.checked)}
                                             className="sr-only peer"
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
                                     </label>
                                 </div>
 
                                 {!day.isClosed && (
-                                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+
+                                        {/* Morning Shift */}
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] uppercase font-bold text-gray-400">Jornada</span>
-                                            <div className="flex items-center gap-2">
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Mañana</span>
+                                            <div className="flex items-center gap-2 group">
                                                 <input
                                                     type="time"
-                                                    value={day.openTime}
-                                                    onChange={(e) => handleChange(index, 'openTime', e.target.value)}
-                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-black outline-none w-full"
+                                                    value={day.morningStart || ""}
+                                                    onChange={(e) => handleChange(index, 'morningStart', e.target.value)}
+                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none w-full transition-all group-hover:border-blue-200"
+                                                    placeholder="--:--"
                                                 />
                                                 <span className="text-gray-300">-</span>
                                                 <input
                                                     type="time"
-                                                    value={day.closeTime}
-                                                    onChange={(e) => handleChange(index, 'closeTime', e.target.value)}
-                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-black outline-none w-full"
+                                                    value={day.morningEnd || ""}
+                                                    onChange={(e) => handleChange(index, 'morningEnd', e.target.value)}
+                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none w-full transition-all group-hover:border-blue-200"
+                                                    placeholder="--:--"
                                                 />
                                             </div>
                                         </div>
 
+                                        {/* Afternoon Shift */}
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] uppercase font-bold text-gray-400">Descanso</span>
-                                            <div className="flex items-center gap-2">
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Tarde</span>
+                                            <div className="flex items-center gap-2 group">
                                                 <input
                                                     type="time"
-                                                    value={day.breakStart || "14:00"}
-                                                    onChange={(e) => handleChange(index, 'breakStart', e.target.value)}
-                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-medium text-gray-600 focus:ring-2 focus:ring-black outline-none w-full"
+                                                    value={day.afternoonStart || ""}
+                                                    onChange={(e) => handleChange(index, 'afternoonStart', e.target.value)}
+                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none w-full transition-all group-hover:border-orange-200"
+                                                    placeholder="--:--"
                                                 />
                                                 <span className="text-gray-300">-</span>
                                                 <input
                                                     type="time"
-                                                    value={day.breakEnd || "16:00"}
-                                                    onChange={(e) => handleChange(index, 'breakEnd', e.target.value)}
-                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-medium text-gray-600 focus:ring-2 focus:ring-black outline-none w-full"
+                                                    value={day.afternoonEnd || ""}
+                                                    onChange={(e) => handleChange(index, 'afternoonEnd', e.target.value)}
+                                                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none w-full transition-all group-hover:border-orange-200"
+                                                    placeholder="--:--"
                                                 />
                                             </div>
                                         </div>
+
                                     </div>
                                 )}
 

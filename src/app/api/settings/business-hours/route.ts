@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { businessHours } from '@/db/schema';
@@ -5,8 +6,6 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { validateScheduleLogic } from '@/lib/validation/schedule';
 import { checkScheduleConflicts } from '@/lib/conflicts';
-
-
 
 export async function GET() {
     try {
@@ -17,11 +16,14 @@ export async function GET() {
             const defaults = Array.from({ length: 7 }, (_, i) => ({
                 id: `default-${i}`,
                 dayOfWeek: i, // 0=Sun, 1=Mon...
-                openTime: '09:00', // Default string
-                closeTime: '20:00',
-                breakStart: '14:00',
-                breakEnd: '16:00',
-                isClosed: i === 0 || i === 6, // Closed weekends by default
+                // Default: 10:00-14:00 and 16:00-20:00 Mon-Fri
+                // Sat: 10:00-14:00 only
+                // Sun: Closed
+                morningStart: i === 0 ? null : '10:00',
+                morningEnd: i === 0 ? null : '14:00',
+                afternoonStart: (i >= 1 && i <= 5) ? '16:00' : null,
+                afternoonEnd: (i >= 1 && i <= 5) ? '20:00' : null,
+                isClosed: i === 0,
             }));
             return NextResponse.json(defaults);
         }
@@ -47,10 +49,11 @@ export async function POST(request: Request) {
         for (const day of body) {
             if (!day.isClosed) {
                 const valid = validateScheduleLogic({
-                    openTime: day.openTime,
-                    closeTime: day.closeTime,
-                    breakStart: day.breakStart,
-                    breakEnd: day.breakEnd
+                    isClosed: day.isClosed,
+                    morningStart: day.morningStart,
+                    morningEnd: day.morningEnd,
+                    afternoonStart: day.afternoonStart,
+                    afternoonEnd: day.afternoonEnd
                 });
 
                 if (!valid.isValid) {
@@ -67,22 +70,19 @@ export async function POST(request: Request) {
                 const dayConflicts = await checkScheduleConflicts({
                     dayOfWeek: day.dayOfWeek,
                     isClosed: day.isClosed,
-                    openTime: day.openTime,
-                    closeTime: day.closeTime,
-                    breakStart: day.breakStart,
-                    breakEnd: day.breakEnd
+                    morningStart: day.morningStart,
+                    morningEnd: day.morningEnd,
+                    afternoonStart: day.afternoonStart,
+                    afternoonEnd: day.afternoonEnd
                 });
                 conflictsList.push(...dayConflicts);
             }
 
             if (conflictsList.length > 0) {
-                // Deduplicate by booking ID (recurring schedule might hit same booking multiple times if logic was flawed, 
-                // but checking day-by-day is safe. Booking only happens once.
-                // However, safe to be sure.)
                 const uniqueConflicts = Array.from(new Map(conflictsList.map(c => [c.bookingId, c])).values());
 
                 return NextResponse.json({
-                    error: 'Schedule conflicts detected',
+                    error: 'Se han detectado conflictos con reservas existentes.',
                     conflicts: uniqueConflicts
                 }, { status: 409 });
             }
@@ -95,20 +95,20 @@ export async function POST(request: Request) {
 
                 if (existing.length > 0) {
                     await tx.update(businessHours).set({
-                        openTime: item.openTime,
-                        closeTime: item.closeTime,
-                        breakStart: item.breakStart || null,
-                        breakEnd: item.breakEnd || null,
+                        morningStart: item.morningStart || null,
+                        morningEnd: item.morningEnd || null,
+                        afternoonStart: item.afternoonStart || null,
+                        afternoonEnd: item.afternoonEnd || null,
                         isClosed: item.isClosed
                     }).where(eq(businessHours.dayOfWeek, item.dayOfWeek));
                 } else {
                     await tx.insert(businessHours).values({
                         id: nanoid(),
                         dayOfWeek: item.dayOfWeek,
-                        openTime: item.openTime,
-                        closeTime: item.closeTime,
-                        breakStart: item.breakStart || null,
-                        breakEnd: item.breakEnd || null,
+                        morningStart: item.morningStart || null,
+                        morningEnd: item.morningEnd || null,
+                        afternoonStart: item.afternoonStart || null,
+                        afternoonEnd: item.afternoonEnd || null,
                         isClosed: item.isClosed
                     });
                 }

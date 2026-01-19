@@ -1,0 +1,33 @@
+--- availability_exceptions ---
+id (TEXT)
+date (TEXT)
+open_time (TEXT)
+close_time (TEXT)
+is_closed (INTEGER)
+reason (TEXT)
+break_start (TEXT)
+break_end (TEXT)
+
+--- bookings ---
+id (TEXT)
+locator (TEXT)
+service_id (TEXT)
+customer_name (TEXT)
+customer_email (TEXT)
+customer_phone (TEXT)
+date (TEXT)
+start_time (TEXT)
+selected_options (TEXT)
+status (TEXT)
+created_at (INTEGER)
+start_at (INTEGER)
+end_at (INTEGER)
+
+--- business_hours ---
+id (TEXT)
+day_of_week (INTEGER)
+open_time (TEXT)
+close_time (TEXT)
+break_start (TEXT)
+break_end (TEXT)
+is_closed (INTEGER)

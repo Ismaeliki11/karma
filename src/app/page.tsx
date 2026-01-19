@@ -2,6 +2,7 @@
 "use client";
 
 import { Navbar } from "@/components/Navbar";
+import { PublicNotice } from "@/components/PublicNotice";
 import { Hero } from "@/components/Hero";
 import { Services } from "@/components/Services";
 import { Hours } from "@/components/Hours";
@@ -20,6 +21,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       <Navbar onBook={handleBook} />
+      <PublicNotice />
       <Hero onBook={handleBook} />
       <Services />
       <Hours />
