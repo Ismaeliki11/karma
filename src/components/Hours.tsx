@@ -83,15 +83,25 @@ export function Hours() {
 
     const detectFutureExceptions = (exceptions: Exception[]) => {
         const today = startOfDay(new Date());
-        const startOfNextPhase = addDays(today, 7);
-        const endOfScan = addDays(today, 21); // Scan 2 weeks ahead
+        const startOfNextPhase = addDays(today, 1); // Anything after today
+        const endOfScan = addDays(today, 60); // Scan 2 months ahead
 
-        const future = exceptions.find(ex => {
-            const exStart = parseISO(ex.startDate);
-            const exEnd = parseISO(ex.endDate);
-            // Check if ANY part of the exception is between Day 7 and Day 21
-            return (exStart <= endOfScan && exEnd >= startOfNextPhase);
-        });
+        const future = exceptions
+            .filter(ex => {
+                const exStart = parseISO(ex.startDate);
+                const exEnd = parseISO(ex.endDate);
+                return (exStart <= endOfScan && exEnd >= startOfNextPhase);
+            })
+            // Sort by start date to get the closest one
+            .sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime())
+            .find(ex => {
+                // Return the first one that is NOT in the current viewable week (if possible)
+                // or just the absolute next one.
+                const exStart = parseISO(ex.startDate);
+                const endOfCurrentWeek = addDays(today, 7);
+                return exStart > endOfCurrentWeek;
+            });
+
         setFutureException(future || null);
     };
 
@@ -176,36 +186,56 @@ export function Hours() {
 
                     {/* Future Exception Alert */}
                     {futureException && weekOffset === 0 && (
-                        <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between gap-4 text-blue-900 animate-in fade-in slide-in-from-top-2">
-                            <div className="flex items-center gap-3">
-                                <Calendar className="text-blue-500 shrink-0" size={20} />
-                                <p className="text-sm font-bold">
-                                    Próximo cierre/cambio detectado: <span className="text-blue-700 underline underline-offset-2">
-                                        {format(parseISO(futureException.startDate), "d 'de' MMMM", { locale: es })}
-                                    </span>
-                                </p>
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mb-10 group relative"
+                        >
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-indigo-500 to-violet-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                            <div className="relative bg-white border border-neutral-100 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-shrink-0 w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                                        <Calendar size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-neutral-500 mb-0.5">Próximo cambio detectado</p>
+                                        <h4 className="text-neutral-900 font-bold flex items-center gap-2">
+                                            {format(parseISO(futureException.startDate), "d 'de' MMMM", { locale: es })}
+                                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                                        </h4>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        const exDate = parseISO(futureException.startDate);
+                                        const diff = exDate.getTime() - startOfDay(new Date()).getTime();
+                                        const weekIdx = Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+                                        setWeekOffset(weekIdx);
+                                    }}
+                                    className="w-full md:w-auto px-6 py-2.5 bg-neutral-900 text-white text-sm font-bold rounded-xl hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 flex items-center justify-center gap-2"
+                                >
+                                    Ver esa semana
+                                    <ChevronRight size={16} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setWeekOffset(1)}
-                                className="text-xs font-bold bg-blue-500 text-white px-3 py-1.5 rounded-full hover:bg-blue-600 transition-colors shrink-0"
-                            >
-                                Ver esa semana
-                            </button>
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* Current Week Exception Alert */}
                     {weeklyException && (
-                        <div className="mb-8 p-5 bg-orange-50 border border-orange-100 rounded-2xl flex items-start gap-4 text-orange-900 animate-in fade-in slide-in-from-top-2">
-                            <div className="p-2 bg-white rounded-xl shadow-sm">
-                                <AlertCircle className="shrink-0 text-orange-500" size={24} />
+                        <div className="mb-8 p-5 bg-pink-50/50 border border-pink-100 rounded-2xl flex items-start gap-4 text-pink-900">
+                            <div className="p-2.5 bg-white rounded-xl shadow-sm text-pink-500 border border-pink-100">
+                                <AlertCircle className="shrink-0" size={24} />
                             </div>
-                            <div>
-                                <h4 className="font-bold text-sm uppercase tracking-wider mb-1">Cambio de Horario esta Semana</h4>
-                                <p className="text-[15px] font-medium leading-relaxed opacity-90">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                                    <h4 className="font-bold text-xs uppercase tracking-widest text-pink-600">Aviso importante</h4>
+                                </div>
+                                <p className="text-[15px] font-medium leading-relaxed text-neutral-800">
                                     {weeklyException.isClosed
-                                        ? `Atención: Estaremos cerrados temporalmente por: ${weeklyException.reason || 'Festivo'}.`
-                                        : `Aviso: Tenemos un horario especial por: ${weeklyException.reason || 'Festivo'}.`
+                                        ? `Estaremos cerrados temporalmente por: ${weeklyException.reason || 'Festivo'}.`
+                                        : `Horario especial aplicado por: ${weeklyException.reason || 'Festivo'}.`
                                     }
                                 </p>
                             </div>
