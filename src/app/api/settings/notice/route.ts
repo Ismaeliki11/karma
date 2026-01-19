@@ -8,7 +8,6 @@ export async function GET() {
         const settings = await getSettings();
         return NextResponse.json(settings.publicNotice);
     } catch (error) {
-        // Return default/empty notice on error
         return NextResponse.json({ active: false, message: "" });
     }
 }

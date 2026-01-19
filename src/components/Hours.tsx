@@ -15,9 +15,20 @@ const schedule = [
 
 export function Hours() {
     const [today, setToday] = useState<string>("");
+    const [notice, setNotice] = useState<{ active: boolean; message: string } | null>(null);
 
     useEffect(() => {
         setToday(new Date().toLocaleDateString('es-ES', { weekday: 'long' }));
+
+        // Fetch public notice
+        fetch("/api/settings/notice")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.active) {
+                    setNotice(data);
+                }
+            })
+            .catch((err) => console.error("Error fetching notice:", err));
     }, []);
 
     return (
@@ -31,6 +42,20 @@ export function Hours() {
                 </div>
 
                 <div className="bg-white rounded-3xl p-6 md:p-10 shadow-xl shadow-neutral-100/50 border border-neutral-200/60 transition-all hover:shadow-2xl hover:shadow-neutral-200/50">
+
+                    {/* Public Notice Banner in Hours */}
+                    {notice && (
+                        <div className="mb-8 p-4 bg-pink-50 border border-pink-100 rounded-xl flex items-start gap-3 text-pink-900">
+                            <Clock className="shrink-0 mt-0.5" size={20} />
+                            <div>
+                                <h4 className="font-bold text-sm uppercase tracking-wide mb-1">Aviso Importante</h4>
+                                <p className="text-sm font-medium leading-relaxed opacity-90">
+                                    {notice.message}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex items-center gap-4 mb-8 pb-6 border-b border-neutral-100">
                         <div className="p-3.5 bg-pink-50 rounded-2xl text-pink-500">
                             <Clock size={26} strokeWidth={2} />

@@ -66,3 +66,9 @@ export const availabilityExceptions = sqliteTable('availability_exceptions', {
     isClosed: integer('is_closed', { mode: 'boolean' }).notNull().default(false),
     reason: text('reason'),
 });
+
+export const settings = sqliteTable('settings', {
+    id: text('id').primaryKey(), // Singleton row, always "1"
+    publicNoticeActive: integer('public_notice_active', { mode: 'boolean' }).notNull().default(false),
+    publicNoticeMessage: text('public_notice_message').notNull().default(""),
+});

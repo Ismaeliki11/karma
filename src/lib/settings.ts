@@ -1,19 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-
-const SETTINGS_FILE = path.join(process.cwd(), 'data', 'settings.json');
-
-// Ensure data dir exists
-const ensureDir = () => {
-    try {
-        const dir = path.dirname(SETTINGS_FILE);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-    } catch (e) {
-        console.warn("Could not ensure settings directory (likely read-only fs):", e);
-    }
-};
+import { db } from '@/db';
+import { settings } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export interface Settings {
     publicNotice: {
@@ -29,29 +16,45 @@ const DEFAULT_SETTINGS: Settings = {
     },
 };
 
+const SETTINGS_ID = "1"; // Singleton ID
+
 export async function getSettings(): Promise<Settings> {
     try {
-        ensureDir();
-        if (!fs.existsSync(SETTINGS_FILE)) {
-            // Attempt to create default file, but don't fail if we can't (read-only fs)
-            try {
-                await saveSettings(DEFAULT_SETTINGS);
-            } catch (e) {
-                console.warn("Could not save default settings:", e);
-                return DEFAULT_SETTINGS;
-            }
+        const result = await db.select().from(settings).where(eq(settings.id, SETTINGS_ID)).limit(1);
+
+        if (result.length === 0) {
+            // No settings in DB, return defaults (and maybe create them if you want, but lazy init is fine)
             return DEFAULT_SETTINGS;
         }
-        const content = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-        return JSON.parse(content);
+
+        const row = result[0];
+        return {
+            publicNotice: {
+                active: row.publicNoticeActive,
+                message: row.publicNoticeMessage,
+            },
+        };
     } catch (e) {
-        console.warn("Error reading settings, using defaults:", e);
+        console.error("Error reading settings from DB:", e);
         return DEFAULT_SETTINGS;
     }
 }
 
-export async function saveSettings(settings: Settings): Promise<void> {
-    ensureDir();
-    // This will throw if FS is read-only, caller must handle it or we handle here
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+export async function saveSettings(newSettings: Settings): Promise<void> {
+    try {
+        await db.insert(settings).values({
+            id: SETTINGS_ID,
+            publicNoticeActive: newSettings.publicNotice.active,
+            publicNoticeMessage: newSettings.publicNotice.message,
+        }).onConflictDoUpdate({
+            target: settings.id,
+            set: {
+                publicNoticeActive: newSettings.publicNotice.active,
+                publicNoticeMessage: newSettings.publicNotice.message,
+            },
+        });
+    } catch (e) {
+        console.error("Error saving settings to DB:", e);
+        throw e; // Let the caller handle the error
+    }
 }
