@@ -2,6 +2,11 @@
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables for standalone scripts
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 
 const dbUrl = process.env.TURSO_DATABASE_URL;
