@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { DashboardClient } from './client';
 
 // Edge Runtime compatible
-export const runtime = "edge";
+
 
 export default async function DashboardPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

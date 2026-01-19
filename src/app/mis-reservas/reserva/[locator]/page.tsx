@@ -3,7 +3,7 @@ import { ReservationCard } from '@/components/ReservationCard';
 import Link from 'next/link';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 
-export const runtime = "edge";
+
 
 interface Props {
     params: Promise<{ locator: string }>;

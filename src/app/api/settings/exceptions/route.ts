@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 import { validateScheduleLogic } from '@/lib/validation/schedule';
 import { checkScheduleConflicts } from '@/lib/conflicts';
 
-export const runtime = "edge";
+
 
 export async function GET() {
     try {

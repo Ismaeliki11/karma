@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { getDailySlots } from '@/lib/availability';
 import { parse } from 'date-fns';
 
-export const runtime = "edge";
+
 
 export async function GET(request: Request) {
     try {

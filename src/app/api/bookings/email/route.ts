@@ -4,7 +4,7 @@ import { bookings, verificationTokens, services } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 
-export const runtime = "edge";
+
 
 // Helper to delay execution (mimic processing time or robustness check)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { RescheduleClient } from './client';
 
-export const runtime = "edge";
+
 
 export default async function ReschedulePage(props: {
     params: Promise<{ id: string }>;

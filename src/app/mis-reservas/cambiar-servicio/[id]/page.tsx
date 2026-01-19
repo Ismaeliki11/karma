@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { ChangeServiceClient } from './client';
 
-export const runtime = "edge";
+
 
 export default async function ChangeServicePage(props: {
     params: Promise<{ id: string }>;
